@@ -462,6 +462,7 @@ function updateEnvioNotice() {
 function closePayment() {
   document.getElementById('payment-overlay').classList.remove('open');
   document.getElementById('payment-modal').classList.remove('open');
+  document.getElementById('payment-confetti-rive').style.display = 'none';
   setTimeout(() => {
     if (!userId) {
       document.getElementById('checkout-choice').style.display = 'block';
@@ -470,6 +471,8 @@ function closePayment() {
     document.getElementById('payment-card-step').style.display = 'none';
     document.getElementById('payment-qr-step').style.display = 'none';
     document.getElementById('payment-success').style.display = 'none';
+    document.getElementById('payment-progress-wrap').style.display = 'none';
+    document.getElementById('payment-card-form').style.display = 'block';
   }, 300);
 }
 
@@ -501,6 +504,43 @@ function showQRStep(pedidoId) {
   document.getElementById('qr-total').textContent = formatPrice(total);
   const data = '0002000100000003100012345678901|SHOPRIVE.MERCADO.MIO|' + total;
   document.getElementById('qr-code-img').src = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(data);
+}
+
+function showPaymentProgress(onComplete) {
+  const wrap = document.getElementById('payment-progress-wrap');
+  const bar = document.getElementById('payment-progress-bar');
+  const text = document.getElementById('payment-progress-text');
+  wrap.style.display = 'block';
+  bar.style.width = '0%';
+  text.textContent = 'Iniciando pago...';
+
+  let pct = 0;
+  let completed = false;
+  const steps = [
+    { at: 20, msg: 'Verificando datos...' },
+    { at: 50, msg: 'Procesando pago...' },
+    { at: 80, msg: 'Confirmando transacción...' },
+    { at: 100, msg: '¡Pago completado!' }
+  ];
+  const interval = setInterval(() => {
+    if (completed) return;
+    pct += 2;
+    if (pct > 95) pct = 95; // Don't reach 100% until complete() is called
+    bar.style.width = pct + '%';
+    const step = steps.find(s => pct >= s.at);
+    if (step) text.textContent = step.msg;
+  }, 50);
+
+  return {
+    complete(callback) {
+      completed = true;
+      pct = 100;
+      bar.style.width = '100%';
+      text.textContent = '✅ ¡Completado!';
+      clearInterval(interval);
+      if (callback) setTimeout(callback, 500);
+    }
+  };
 }
 
 async function submitPayment(e) {
@@ -569,7 +609,9 @@ async function processCardPayment(e) {
   const btn = document.getElementById('card-pay-btn');
   const btnText = document.getElementById('card-pay-text');
   btn.disabled = true;
-  btnText.textContent = 'Procesando pago...';
+  btnText.textContent = 'Procesando...';
+  document.getElementById('payment-card-form').style.display = 'none';
+  const progress = showPaymentProgress();
 
   const pedidoId = document.getElementById('card-pedido-id').textContent;
   const items = cart.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.qty }));
@@ -588,11 +630,19 @@ async function processCardPayment(e) {
     });
     const data = await res.json();
     if (data.success) {
-      // Pago exitoso → vaciar carrito y stock
-      document.getElementById('payment-card-step').style.display = 'none';
-      document.getElementById('payment-success').style.display = 'block';
-      document.getElementById('payment-success-msg').textContent = 'Pedido #' + data.pedido_id + ' confirmado. Te enviamos un email con los detalles.';
-      setTimeout(() => loadRive('payment-success-rive', 'assets/riv/success_check.riv'), 100);
+      // Pago exitoso → completar progreso + animación
+      progress.complete(() => {
+        document.getElementById('payment-progress-wrap').style.display = 'none';
+        document.getElementById('payment-success').style.display = 'block';
+        document.getElementById('payment-success-msg').textContent = 'Pedido #' + data.pedido_id + ' confirmado. Te enviamos un email con los detalles.';
+        setTimeout(() => loadRive('payment-success-rive', 'assets/riv/success_check.riv'), 100);
+        setTimeout(() => {
+          const cel = document.getElementById('payment-confetti-rive');
+          cel.style.display = 'block';
+          loadRive('payment-confetti-rive', 'assets/riv/confetti-celebration.riv');
+          setTimeout(() => { cel.style.display = 'none'; }, 4000);
+        }, 600);
+      });
 
       for (const item of cart) {
         const prod = products.find(p => p.id === item.id);
