@@ -12,6 +12,11 @@ require_once __DIR__ . '/../config/database.php';
 $userId = $_SESSION['user_id'] ?? null;
 $action = $_GET['action'] ?? '';
 
+if (!$pdo) {
+    echo json_encode(['success' => false, 'error' => 'Error de conexión a la base de datos']);
+    exit;
+}
+
 switch ($action) {
     case 'add':
         if (!$userId) {

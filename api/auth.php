@@ -11,6 +11,11 @@ require_once __DIR__ . '/../config/database.php';
 
 $action = $_GET['action'] ?? '';
 
+if (!$pdo) {
+    echo json_encode(['success' => false, 'error' => 'Error de conexión a la base de datos. ¿Ejecutaste scripts/setup_db.sql?']);
+    exit;
+}
+
 switch ($action) {
     case 'register':
         $data = json_decode(file_get_contents('php://input'), true);

@@ -40,8 +40,8 @@
       <button type="submit" class="btn-primary" style="width:100%">Crear Cuenta</button>
     </form>
     <div class="auth-link">
-      ¿Ya tenés cuenta? <a href="login.html">Iniciá sesión</a><br>
-      <a href="../index.html" style="color:var(--text-muted);font-size:0.85rem;">← Volver a la tienda</a>
+      ¿Ya tenés cuenta? <a href="login.php">Iniciá sesión</a><br>
+      <a href="../index.php" style="color:var(--text-muted);font-size:0.85rem;">← Volver a la tienda</a>
     </div>
   </div>
   <script>
@@ -59,7 +59,7 @@
           })
         });
         const data = await res.json();
-        if (data.success) { window.location.href = '../index.html'; }
+        if (data.success) { window.location.href = '../index.php'; }
         else { err.textContent = data.error; err.style.display = 'block'; }
       } catch (e) {
         err.textContent = 'Error de conexión. ¿El servidor PHP está funcionando?';
