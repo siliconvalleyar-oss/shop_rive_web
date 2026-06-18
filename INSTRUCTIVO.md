@@ -29,8 +29,8 @@ El asistente responde consultas sobre:
 
 | Rol    | Email              | Contraseña |
 |--------|--------------------|------------|
-| Admin  | admin@shoprive.com | admin123   |
-| Usuario| user@shoprive.com  | admin123   |
+| Admin  | admin@shoprive.com | 123456     |
+| Usuario| user@shoprive.com  | 123456     |
 
 ## Notas
 
