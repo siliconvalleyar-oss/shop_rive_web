@@ -122,31 +122,52 @@ function prevSlide() { goToSlide((currentSlide + 2) % 3); }
 function startAutoSlide() { slideInterval = setInterval(nextSlide, 5000); }
 function resetAutoSlide() { clearInterval(slideInterval); startAutoSlide(); }
 
-// --- CART ---
+// --- CART (offline-first con localStorage) ---
 function toggleCart() {
   document.getElementById('cart-sidebar').classList.toggle('open');
   document.getElementById('cart-overlay').classList.toggle('open');
 }
 
-async function addToCart(id) {
-  if (!userId) {
-    showToast('Iniciá sesión para agregar al carrito');
-    return;
-  }
+function saveCart() {
+  localStorage.setItem('shoprive_cart', JSON.stringify(cart));
+}
 
-  // API call
+function loadCart() {
   try {
-    await fetch('api/cart.php?action=add', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ producto_id: id, cantidad: 1 })
-    });
-  } catch (e) {}
+    const saved = localStorage.getItem('shoprive_cart');
+    if (saved) cart = JSON.parse(saved);
+  } catch (e) { cart = []; }
+}
 
+async function syncCartWithServer() {
+  if (!userId) return;
+  for (const item of cart) {
+    try {
+      await fetch('api/cart.php?action=add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ producto_id: item.id, cantidad: item.qty })
+      });
+    } catch (e) {}
+  }
+}
+
+async function addToCart(id) {
   const existing = cart.find(item => item.id === id);
   if (existing) { existing.qty++; }
   else { const p = products.find(p => p.id === id); cart.push({ ...p, qty: 1 }); }
 
+  if (userId) {
+    try {
+      await fetch('api/cart.php?action=add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ producto_id: id, cantidad: 1 })
+      });
+    } catch (e) {}
+  }
+
+  saveCart();
   updateCart();
   showToast('Agregado: ' + products.find(p => p.id === id).name);
   const badge = document.getElementById('cart-badge');
@@ -161,6 +182,7 @@ function removeFromCart(id) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ producto_id: id })
   }).catch(() => {});
+  saveCart();
   updateCart();
 }
 
@@ -174,6 +196,7 @@ function updateQty(id, delta) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ producto_id: id, cantidad: item.qty })
   }).catch(() => {});
+  saveCart();
   updateCart();
 }
 
@@ -223,21 +246,23 @@ function updateCart() {
 }
 
 async function checkout() {
-  if (!userId) { showToast('Iniciá sesión para comprar'); return; }
   if (cart.length === 0) { showToast('El carrito está vacío'); return; }
-  try { await fetch('api/cart.php?action=clear', { method: 'POST' }); } catch (e) {}
+  if (userId) {
+    try { await fetch('api/cart.php?action=clear', { method: 'POST' }); } catch (e) {}
+  }
   showToast('Compra realizada con éxito 🎉');
   cart = [];
+  saveCart();
   updateCart();
   setTimeout(toggleCart, 1000);
 }
 
 async function loadCartFromDB() {
-  if (!userId) return;
+  if (!userId) { loadCart(); updateCart(); return; }
   try {
     const res = await fetch('api/cart.php');
     const data = await res.json();
-    if (data.success && data.items) {
+    if (data.success && data.items && data.items.length > 0) {
       cart = data.items.map(i => {
         const p = products.find(p => p.id === parseInt(i.producto_id)) || {};
         return {
@@ -248,9 +273,15 @@ async function loadCartFromDB() {
           qty: parseInt(i.cantidad)
         };
       });
-      updateCart();
+      saveCart();
+    } else {
+      loadCart();
+      if (cart.length > 0) syncCartWithServer();
     }
-  } catch (e) {}
+  } catch (e) {
+    loadCart();
+  }
+  updateCart();
 }
 
 // --- TOAST ---
@@ -362,5 +393,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   initRiveAnimations();
   renderProducts();
   initCarousel();
-  if (userId) await loadCartFromDB();
+  await loadCartFromDB();
 });
