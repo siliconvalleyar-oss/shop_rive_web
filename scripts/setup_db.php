@@ -15,18 +15,18 @@ $pdo->prepare("INSERT INTO usuarios (id, nombre, email, password, rol) VALUES (?
 // --- PRODUCTOS ---
 $pdo->exec("CREATE TABLE productos");
 $productos = [
-    [1, 'Auriculares Pro', 'electronica', 45000, 'hero-ui-animation', '#6c5ce7', 25, 0],
-    [2, 'Reloj Inteligente', 'electronica', 65000, 'rotating-can', '#fd79a8', 15, 0],
-    [3, 'Zapatillas Urbanas', 'moda', 52000, 'shoe-showcase', '#00b894', 30, 0],
-    [4, 'Bolso de Mano', 'moda', 38000, 'purse-360', '#fdcb6e', 20, 0],
-    [5, 'Lámpara LED', 'hogar', 18000, 'off_road_car_0_6', '#e17055', 50, 0],
-    [6, 'Campera Premium', 'moda', 78000, 'shoe-showcase', '#00cec9', 12, 0],
-    [7, 'Tablet 10"', 'electronica', 120000, 'rotating-can', '#a29bfe', 8, 0],
-    [8, 'Set de Pesas', 'deportes', 35000, 'off_road_car_0_6', '#fab1a0', 18, 0],
-    [9, 'Billetera Elegante', 'moda', 22000, 'purse-360', '#6c5ce7', 35, 0],
-    [10, 'Parlante Portátil', 'electronica', 32000, 'hero-ui-animation', '#fd79a8', 22, 0],
+    [1, 'Auriculares Pro', 'electronica', 45000, 'hero-ui-animation', '#6c5ce7', 25, 0, '[]'],
+    [2, 'Reloj Inteligente', 'electronica', 65000, 'rotating-can', '#fd79a8', 15, 0, '[]'],
+    [3, 'Zapatillas Urbanas', 'moda', 52000, 'shoe-showcase', '#00b894', 30, 0, '[]'],
+    [4, 'Bolso de Mano', 'moda', 38000, 'purse-360', '#fdcb6e', 20, 0, '[]'],
+    [5, 'Lámpara LED', 'hogar', 18000, 'off_road_car_0_6', '#e17055', 50, 0, '[]'],
+    [6, 'Campera Premium', 'moda', 78000, 'shoe-showcase', '#00cec9', 12, 0, '[]'],
+    [7, 'Tablet 10"', 'electronica', 120000, 'rotating-can', '#a29bfe', 8, 0, '[]'],
+    [8, 'Set de Pesas', 'deportes', 35000, 'off_road_car_0_6', '#fab1a0', 18, 0, '[]'],
+    [9, 'Billetera Elegante', 'moda', 22000, 'purse-360', '#6c5ce7', 35, 0, '[]'],
+    [10, 'Parlante Portátil', 'electronica', 32000, 'hero-ui-animation', '#fd79a8', 22, 0, '[]'],
 ];
-$stmt = $pdo->prepare("INSERT INTO productos (id, nombre, categoria, precio, riv_file, color, stock, solo_retiro) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+$stmt = $pdo->prepare("INSERT INTO productos (id, nombre, categoria, precio, riv_file, color, stock, solo_retiro, variantes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 foreach ($productos as $p) $stmt->execute($p);
 
 // --- CARRITO ---

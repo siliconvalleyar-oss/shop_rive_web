@@ -1,1 +1,4 @@
- agregar o quitar opciones de administrador . ver stock , consultas , agregar o quitar opciones de envio . habilitar o inhabilitar , contacto , uso de chat bot , sistema para que se guarden las charlas con charbot . consultas que hacen los clientes , analisis , dashboard . 
+formatos de respuesta de mail , escribir diferentes formas de responder un mail. 
+
+desde el sistema se deben genrerar segunel itipo de producto , se generan distintos tipos de mail , compra recepcion de pedido , confirmacion pago , factura , prototipo presupuesto .
+

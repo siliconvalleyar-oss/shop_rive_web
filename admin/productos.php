@@ -28,8 +28,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $uploaded = handleFileUpload('archivo_imagen', $uploadDir);
         $archivo = $uploaded ?: ($_POST['riv_file'] ?: 'car');
         $soloRetiro = isset($_POST['solo_retiro']) ? 1 : 0;
-        $stmt = $pdo->prepare("INSERT INTO productos (nombre, categoria, precio, stock, riv_file, color, solo_retiro) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$_POST['nombre'], $_POST['categoria'], $_POST['precio'], $_POST['stock'] ?: 0, $archivo, $_POST['color'], $soloRetiro]);
+        $variantes = [];
+        $colores = $_POST['var_color'] ?? [];
+        $nombres = $_POST['var_nombre'] ?? [];
+        $modelos = $_POST['var_modelo'] ?? [];
+        $stocks  = $_POST['var_stock'] ?? [];
+        foreach ($colores as $i => $c) {
+            if (!empty($nombres[$i]) || !empty($modelos[$i])) {
+                $variantes[] = ['color' => $c, 'nombre' => $nombres[$i], 'modelo' => $modelos[$i] ?? '', 'stock' => intval($stocks[$i] ?? 0)];
+            }
+        }
+        $variantesJson = json_encode($variantes, JSON_UNESCAPED_UNICODE);
+        $stmt = $pdo->prepare("INSERT INTO productos (nombre, categoria, precio, stock, riv_file, color, solo_retiro, variantes) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$_POST['nombre'], $_POST['categoria'], $_POST['precio'], $_POST['stock'] ?: 0, $archivo, $_POST['color'], $soloRetiro, $variantesJson]);
     } elseif ($action === 'edit' && isset($_POST['id'])) {
         if ($_FILES['archivo_imagen']['error'] === UPLOAD_ERR_OK) {
             $uploaded = handleFileUpload('archivo_imagen', $uploadDir);
@@ -38,8 +49,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $archivo = $_POST['riv_file'] ?: 'car';
         }
         $soloRetiro = isset($_POST['solo_retiro']) ? 1 : 0;
-        $stmt = $pdo->prepare("UPDATE productos SET nombre=?, categoria=?, precio=?, stock=?, riv_file=?, color=?, solo_retiro=? WHERE id=?");
-        $stmt->execute([$_POST['nombre'], $_POST['categoria'], $_POST['precio'], $_POST['stock'] ?: 0, $archivo, $_POST['color'], $soloRetiro, $_POST['id']]);
+        $variantes = [];
+        $colores = $_POST['var_color'] ?? [];
+        $nombres = $_POST['var_nombre'] ?? [];
+        $modelos = $_POST['var_modelo'] ?? [];
+        $stocks  = $_POST['var_stock'] ?? [];
+        foreach ($colores as $i => $c) {
+            if (!empty($nombres[$i]) || !empty($modelos[$i])) {
+                $variantes[] = ['color' => $c, 'nombre' => $nombres[$i], 'modelo' => $modelos[$i] ?? '', 'stock' => intval($stocks[$i] ?? 0)];
+            }
+        }
+        $variantesJson = json_encode($variantes, JSON_UNESCAPED_UNICODE);
+        $stmt = $pdo->prepare("UPDATE productos SET nombre=?, categoria=?, precio=?, stock=?, riv_file=?, color=?, solo_retiro=?, variantes=? WHERE id=?");
+        $stmt->execute([$_POST['nombre'], $_POST['categoria'], $_POST['precio'], $_POST['stock'] ?: 0, $archivo, $_POST['color'], $soloRetiro, $variantesJson, $_POST['id']]);
     } elseif ($action === 'delete' && isset($_POST['id'])) {
         $pdo->prepare("DELETE FROM productos WHERE id = ?")->execute([$_POST['id']]);
     }
@@ -211,6 +233,12 @@ $productos = $pdo->query("SELECT * FROM productos ORDER BY id")->fetchAll();
           </label>
           <span style="font-size:0.8rem;color:var(--text-muted);">El cliente debe retirar en el local (no se puede enviar)</span>
         </div>
+
+        <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">
+        <div style="font-weight:600;font-size:1rem;margin-bottom:12px;">Variantes (colores / modelos)</div>
+        <div id="edit-variantes-wrap"></div>
+        <button type="button" class="btn-sm" onclick="addVariantRow('edit')" style="background:var(--primary);color:#fff;border:none;padding:8px 16px;border-radius:10px;cursor:pointer;margin-bottom:12px;">+ Agregar variante</button>
+
         <div style="display:flex;gap:12px;margin-top:20px;">
           <button class="btn-primary" type="submit">Guardar Cambios</button>
           <button class="btn-primary" type="button" onclick="document.getElementById('edit-overlay').classList.remove('open')" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);">Cancelar</button>
@@ -269,6 +297,12 @@ $productos = $pdo->query("SELECT * FROM productos ORDER BY id")->fetchAll();
           </label>
           <span style="font-size:0.8rem;color:var(--text-muted);">El cliente debe retirar en el local (no se puede enviar)</span>
         </div>
+
+        <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">
+        <div style="font-weight:600;font-size:1rem;margin-bottom:12px;">Variantes (colores / modelos)</div>
+        <div id="add-variantes-wrap"></div>
+        <button type="button" class="btn-sm" onclick="addVariantRow('add')" style="background:var(--primary);color:#fff;border:none;padding:8px 16px;border-radius:10px;cursor:pointer;margin-bottom:12px;">+ Agregar variante</button>
+
         <div style="display:flex;gap:12px;margin-top:20px;">
           <button class="btn-primary" type="submit">Agregar</button>
           <button class="btn-primary" type="button" onclick="document.getElementById('add-overlay').classList.remove('open')" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);">Cancelar</button>
@@ -278,6 +312,26 @@ $productos = $pdo->query("SELECT * FROM productos ORDER BY id")->fetchAll();
   </div>
 
   <script>
+    function addVariantRow(prefix, data) {
+      const wrap = document.getElementById(prefix + '-variantes-wrap');
+      const i = wrap.children.length;
+      const c = data ? data.color : '#6c5ce7';
+      const n = data ? data.nombre : '';
+      const m = data ? data.modelo : '';
+      const s = data ? data.stock : '';
+      const row = document.createElement('div');
+      row.className = 'variant-row';
+      row.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;';
+      row.innerHTML = `
+        <input type="color" name="var_color[]" value="${c}" style="width:40px;height:40px;border:none;border-radius:8px;cursor:pointer;padding:0;background:none;">
+        <input type="text" name="var_nombre[]" placeholder="Color (ej: Rojo)" value="${n}" style="flex:1;min-width:80px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);outline:none;">
+        <input type="text" name="var_modelo[]" placeholder="Modelo (ej: Clásico)" value="${m}" style="flex:1;min-width:80px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);outline:none;">
+        <input type="number" name="var_stock[]" placeholder="Stock" value="${s}" style="width:70px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);outline:none;">
+        <button type="button" class="btn-sm" onclick="this.parentElement.remove()" style="background:transparent;border:1px solid var(--accent);color:var(--accent);padding:8px 12px;border-radius:8px;cursor:pointer;">×</button>
+      `;
+      wrap.appendChild(row);
+    }
+
     function editProduct(p) {
       document.getElementById('edit-id').value = p.id;
       document.getElementById('edit-nombre').value = p.nombre;
@@ -287,6 +341,12 @@ $productos = $pdo->query("SELECT * FROM productos ORDER BY id")->fetchAll();
       document.getElementById('edit-riv').value = p.riv_file || '';
       document.getElementById('edit-color').value = p.color || '#6c5ce7';
       document.getElementById('edit-solo-retiro').checked = p.solo_retiro == 1;
+      // Variantes
+      const wrap = document.getElementById('edit-variantes-wrap');
+      wrap.innerHTML = '';
+      let variantes = [];
+      try { variantes = typeof p.variantes === 'string' ? JSON.parse(p.variantes) : (p.variantes || []); } catch(e) {}
+      variantes.forEach(v => addVariantRow('edit', v));
       // Preview
       const preview = document.getElementById('edit-preview');
       const f = p.riv_file || '';

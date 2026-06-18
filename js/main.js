@@ -5,16 +5,16 @@
 // --- PRODUCT DATA (cargados desde API con fallback offline) ---
 let products = [];
 const defaultProducts = [
-  { id: 1, name: 'Auriculares Pro', category: 'electronica', price: 45000, riv: 'hero-ui-animation', color: '#6c5ce7', stock: 25, solo_retiro: false },
-  { id: 2, name: 'Reloj Inteligente', category: 'electronica', price: 65000, riv: 'rotating-can', color: '#fd79a8', stock: 15, solo_retiro: false },
-  { id: 3, name: 'Zapatillas Urbanas', category: 'moda', price: 52000, riv: 'shoe-showcase', color: '#00b894', stock: 30, solo_retiro: false },
-  { id: 4, name: 'Bolso de Mano', category: 'moda', price: 38000, riv: 'purse-360', color: '#fdcb6e', stock: 20, solo_retiro: false },
-  { id: 5, name: 'Lámpara LED', category: 'hogar', price: 18000, riv: 'off_road_car_0_6', color: '#e17055', stock: 50, solo_retiro: false },
-  { id: 6, name: 'Campera Premium', category: 'moda', price: 78000, riv: 'shoe-showcase', color: '#00cec9', stock: 12, solo_retiro: false },
-  { id: 7, name: 'Tablet 10"', category: 'electronica', price: 120000, riv: 'rotating-can', color: '#a29bfe', stock: 8, solo_retiro: false },
-  { id: 8, name: 'Set de Pesas', category: 'deportes', price: 35000, riv: 'off_road_car_0_6', color: '#fab1a0', stock: 18, solo_retiro: false },
-  { id: 9, name: 'Billetera Elegante', category: 'moda', price: 22000, riv: 'purse-360', color: '#6c5ce7', stock: 35, solo_retiro: false },
-  { id: 10, name: 'Parlante Portátil', category: 'electronica', price: 32000, riv: 'hero-ui-animation', color: '#fd79a8', stock: 22, solo_retiro: false },
+  { id: 1, name: 'Auriculares Pro', category: 'electronica', price: 45000, riv: 'hero-ui-animation', color: '#6c5ce7', stock: 25, solo_retiro: false, variantes: [] },
+  { id: 2, name: 'Reloj Inteligente', category: 'electronica', price: 65000, riv: 'rotating-can', color: '#fd79a8', stock: 15, solo_retiro: false, variantes: [] },
+  { id: 3, name: 'Zapatillas Urbanas', category: 'moda', price: 52000, riv: 'shoe-showcase', color: '#00b894', stock: 30, solo_retiro: false, variantes: [] },
+  { id: 4, name: 'Bolso de Mano', category: 'moda', price: 38000, riv: 'purse-360', color: '#fdcb6e', stock: 20, solo_retiro: false, variantes: [] },
+  { id: 5, name: 'Lámpara LED', category: 'hogar', price: 18000, riv: 'off_road_car_0_6', color: '#e17055', stock: 50, solo_retiro: false, variantes: [] },
+  { id: 6, name: 'Campera Premium', category: 'moda', price: 78000, riv: 'shoe-showcase', color: '#00cec9', stock: 12, solo_retiro: false, variantes: [] },
+  { id: 7, name: 'Tablet 10"', category: 'electronica', price: 120000, riv: 'rotating-can', color: '#a29bfe', stock: 8, solo_retiro: false, variantes: [] },
+  { id: 8, name: 'Set de Pesas', category: 'deportes', price: 35000, riv: 'off_road_car_0_6', color: '#fab1a0', stock: 18, solo_retiro: false, variantes: [] },
+  { id: 9, name: 'Billetera Elegante', category: 'moda', price: 22000, riv: 'purse-360', color: '#6c5ce7', stock: 35, solo_retiro: false, variantes: [] },
+  { id: 10, name: 'Parlante Portátil', category: 'electronica', price: 32000, riv: 'hero-ui-animation', color: '#fd79a8', stock: 22, solo_retiro: false, variantes: [] },
 ];
 
 let cart = [];
@@ -23,6 +23,7 @@ let slideInterval;
 let riveInstances = [];
 let userId = null;
 let userRol = null;
+let selectedVariants = {};
 
 // --- UTILS ---
 function formatPrice(n) {
@@ -89,16 +90,21 @@ async function loadProductsFromAPI() {
     const res = await fetch('api/products.php');
     const data = await res.json();
     if (data.success && data.productos) {
-      products = data.productos.map(p => ({
-        id: parseInt(p.id),
-        name: p.nombre,
-        category: p.categoria,
-        price: parseFloat(p.precio),
-        riv: p.riv_file || 'car',
-        color: p.color || '#6c5ce7',
-        stock: parseInt(p.stock) || 0,
-        solo_retiro: p.solo_retiro == 1
-      }));
+      products = data.productos.map(p => {
+        let variantes = [];
+        try { variantes = typeof p.variantes === 'string' ? JSON.parse(p.variantes) : (p.variantes || []); } catch(e) {}
+        return {
+          id: parseInt(p.id),
+          name: p.nombre,
+          category: p.categoria,
+          price: parseFloat(p.precio),
+          riv: p.riv_file || 'car',
+          color: p.color || '#6c5ce7',
+          stock: parseInt(p.stock) || 0,
+          solo_retiro: p.solo_retiro == 1,
+          variantes: variantes
+        };
+      });
       return;
     }
   } catch (e) {}
@@ -126,10 +132,18 @@ function renderProducts(filter) {
         <div class="product-category">${p.category}</div>
         <div class="product-name">${p.name}${p.solo_retiro ? '<span style="font-size:0.65rem;background:var(--accent);color:#fff;padding:2px 8px;border-radius:20px;margin-left:6px;vertical-align:middle;">Local</span>' : ''}</div>
         <div class="product-price">${formatPrice(p.price)}</div>
-        <div style="font-size:0.8rem;color:${p.stock > 5 ? 'var(--success)' : p.stock > 0 ? 'var(--accent)' : 'var(--text-muted)'};margin-bottom:12px;">
+        <div id="prod-stock-${p.id}" style="font-size:0.8rem;color:${p.stock > 5 ? 'var(--success)' : p.stock > 0 ? 'var(--accent)' : 'var(--text-muted)'};margin-bottom:${p.variantes && p.variantes.length ? '4px' : '12px'};">
           ${p.stock > 0 ? 'Stock: ' + p.stock : 'Sin stock'}
         </div>
-        <button class="add-to-cart" onclick="addToCart(${p.id})" ${p.stock <= 0 ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>
+        ${p.variantes && p.variantes.length > 0 ? `
+          <div style="margin-bottom:8px;">
+            <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:4px;" id="prod-colors-${p.id}">
+              ${p.variantes.map((v, vi) => `<button type="button" class="color-swatch" data-vi="${vi}" data-color="${v.color}" data-stock="${v.stock}" data-nombre="${v.nombre}" data-modelo="${v.modelo}" style="width:28px;height:28px;border-radius:50%;border:2px solid transparent;background:${v.color};cursor:pointer;padding:0;outline:none;transition:all .15s;" onclick="selectVariant(${p.id}, ${vi})" title="${v.nombre}${v.modelo ? ' - ' + v.modelo : ''}"></button>`).join('')}
+            </div>
+            <div style="font-size:0.75rem;color:var(--text-muted);" id="prod-variant-label-${p.id}">Seleccioná un color</div>
+          </div>
+        ` : ''}
+        <button class="add-to-cart" id="prod-btn-${p.id}" onclick="addToCart(${p.id})" ${p.stock <= 0 ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
             <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/>
@@ -199,16 +213,59 @@ async function syncCartWithServer() {
   }
 }
 
+function selectVariant(prodId, vi) {
+  selectedVariants[prodId] = vi;
+  const prod = products.find(p => p.id === prodId);
+  if (!prod || !prod.variantes) return;
+  const v = prod.variantes[vi];
+  // Highlight selected color
+  document.querySelectorAll(`#prod-colors-${prodId} .color-swatch`).forEach((btn, i) => {
+    btn.style.borderColor = i === vi ? '#fff' : 'transparent';
+    btn.style.boxShadow = i === vi ? '0 0 0 2px var(--primary)' : 'none';
+  });
+  // Show variant label
+  const label = document.getElementById('prod-variant-label-' + prodId);
+  if (label) label.textContent = v.nombre + (v.modelo ? ' - ' + v.modelo : '') + ' (Stock: ' + v.stock + ')';
+  // Update stock display
+  const stockEl = document.getElementById('prod-stock-' + prodId);
+  if (stockEl) {
+    const totalStock = prod.variantes.reduce((s, x) => s + (x.stock || 0), 0);
+    stockEl.textContent = 'Stock total: ' + totalStock;
+    stockEl.style.color = totalStock > 5 ? 'var(--success)' : totalStock > 0 ? 'var(--accent)' : 'var(--text-muted)';
+  }
+}
+
 async function addToCart(id) {
   const prod = products.find(p => p.id === id);
-  if (!prod || prod.stock <= 0) { showToast('Producto sin stock'); return; }
+  if (!prod) { showToast('Producto no encontrado'); return; }
+  const hasVariants = prod.variantes && prod.variantes.length > 0;
+  const totalStock = hasVariants ? prod.variantes.reduce((s, v) => s + (v.stock || 0), 0) : prod.stock;
+  if (totalStock <= 0) { showToast('Producto sin stock'); return; }
 
-  const existing = cart.find(item => item.id === id);
+  if (hasVariants && selectedVariants[id] === undefined) {
+    showToast('Seleccioná un color primero');
+    return;
+  }
+  const vi = selectedVariants[id];
+  const v = vi !== undefined ? prod.variantes[vi] : null;
+  const effectiveStock = v ? v.stock : prod.stock;
+  if (effectiveStock <= 0) { showToast('Variante sin stock'); return; }
+
+  const existing = cart.find(item => item.id === id && item.variantIdx === vi);
   const qtyInCart = existing ? existing.qty : 0;
-  if (qtyInCart >= prod.stock) { showToast('Stock máximo alcanzado'); return; }
+  if (qtyInCart >= effectiveStock) { showToast('Stock máximo alcanzado'); return; }
 
+  // Sync with server for stock check if needed
   if (existing) { existing.qty++; }
-  else { cart.push({ ...prod, qty: 1 }); }
+  else {
+    const cartItem = { ...prod, qty: 1, variantIdx: vi };
+    if (v) {
+      cartItem.selectedColor = v.color;
+      cartItem.selectedColorName = v.nombre;
+      cartItem.selectedModelo = v.modelo;
+    }
+    cart.push(cartItem);
+  }
 
   if (userId) {
     try {
@@ -228,8 +285,8 @@ async function addToCart(id) {
   setTimeout(() => badge.style.animation = 'badgePop 0.3s ease', 10);
 }
 
-function removeFromCart(id) {
-  cart = cart.filter(item => item.id !== id);
+function removeFromCart(id, variantIdx) {
+  cart = cart.filter(item => !(item.id === id && item.variantIdx === variantIdx));
   if (userId) fetch('api/cart.php?action=remove', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -239,11 +296,16 @@ function removeFromCart(id) {
   updateCart();
 }
 
-function updateQty(id, delta) {
-  const item = cart.find(i => i.id === id);
+function updateQty(id, delta, variantIdx) {
+  let item;
+  if (variantIdx !== undefined) {
+    item = cart.find(i => i.id === id && i.variantIdx === variantIdx);
+  } else {
+    item = cart.find(i => i.id === id);
+  }
   if (!item) return;
   item.qty += delta;
-  if (item.qty <= 0) { removeFromCart(id); return; }
+  if (item.qty <= 0) { removeFromCart(id, item.variantIdx); return; }
   if (userId) fetch('api/cart.php?action=update', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -277,17 +339,17 @@ function updateCart() {
     total += item.price * item.qty;
     html += `
       <div class="cart-item">
-        <div style="width:64px;height:64px;border-radius:12px;background:${item.color};flex-shrink:0;"></div>
+        <div style="width:64px;height:64px;border-radius:12px;background:${item.selectedColor || item.color};flex-shrink:0;"></div>
         <div class="cart-item-info">
-          <div class="cart-item-name">${item.name}</div>
+          <div class="cart-item-name">${item.name}${item.selectedColorName ? ' <span style="font-weight:400;color:var(--text-muted);font-size:0.75rem;">(' + item.selectedColorName + (item.selectedModelo ? ' - ' + item.selectedModelo : '') + ')</span>' : ''}</div>
           <div class="cart-item-price">${formatPrice(item.price)}</div>
           <div class="cart-item-qty">
-            <button class="qty-btn" onclick="updateQty(${item.id}, -1)">−</button>
+            <button class="qty-btn" onclick="updateQty(${item.id}, -1${item.variantIdx !== undefined ? ',' + item.variantIdx : ''})">−</button>
             <span>${item.qty}</span>
-            <button class="qty-btn" onclick="updateQty(${item.id}, 1)">+</button>
+            <button class="qty-btn" onclick="updateQty(${item.id}, 1${item.variantIdx !== undefined ? ',' + item.variantIdx : ''})">+</button>
           </div>
         </div>
-        <button class="cart-item-remove" onclick="removeFromCart(${item.id})">
+        <button class="cart-item-remove" onclick="removeFromCart(${item.id}${item.variantIdx !== undefined ? ',' + item.variantIdx : ''})">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
           </svg>
@@ -451,7 +513,15 @@ async function submitPayment(e) {
   btnRive.style.display = 'inline-block';
   loadRive('pay-submit-rive', 'assets/riv/buy-button-sparkle.riv');
 
-  const items = cart.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.qty }));
+  const items = cart.map(i => ({
+    id: i.id,
+    name: i.name + (i.selectedColorName ? ' (' + i.selectedColorName + (i.selectedModelo ? ' - ' + i.selectedModelo : '') + ')' : ''),
+    price: i.price,
+    qty: i.qty,
+    color: i.selectedColor || '',
+    color_name: i.selectedColorName || '',
+    modelo: i.selectedModelo || ''
+  }));
 
   try {
     const res = await fetch('api/checkout.php?action=create', {
