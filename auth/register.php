@@ -49,14 +49,19 @@
     document.getElementById('register-form').onsubmit = async (e) => {
       e.preventDefault();
       const err = document.getElementById('auth-error');
-      const res = await fetch('../api/auth.php?action=register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre: document.getElementById('nombre').value, email: document.getElementById('email').value, password: document.getElementById('password').value })
-      });
-      const data = await res.json();
-      if (data.success) { window.location.href = '../index.php'; }
-      else { err.textContent = data.error; err.style.display = 'block'; }
+      try {
+        const res = await fetch('../api/auth.php?action=register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombre: document.getElementById('nombre').value, email: document.getElementById('email').value, password: document.getElementById('password').value })
+        });
+        const data = await res.json();
+        if (data.success) { window.location.href = '../index.php'; }
+        else { err.textContent = data.error; err.style.display = 'block'; }
+      } catch (e) {
+        err.textContent = 'Error de conexión. Asegurate de que el servidor PHP esté funcionando.';
+        err.style.display = 'block';
+      }
     };
   </script>
 </body>

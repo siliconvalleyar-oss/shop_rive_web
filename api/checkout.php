@@ -76,6 +76,15 @@ if ($action === 'create') {
       $stmtItem->execute([$pedido_id, intval($item['id']), $item['name'], floatval($item['price']), intval($item['qty'])]);
     }
 
+    // Send reception email
+    require_once __DIR__ . '/../config/email.php';
+    $pedidoData = [
+      'id' => $pedido_id, 'nombre' => $nombre, 'email' => $email,
+      'tipo_envio' => $tipo_envio, 'metodo_pago' => $metodo, 'total' => $total
+    ];
+    $itemsData = array_map(fn($i) => ['nombre' => $i['name'], 'precio' => $i['price'], 'cantidad' => $i['qty']], $items);
+    enviarEmailTipo('recepcion', $email, $pedidoData, $itemsData);
+
     echo json_encode(['success' => true, 'pedido_id' => $pedido_id, 'message' => 'Pedido creado']);
   } catch (Exception $e) {
     echo json_encode(['success' => false, 'message' => 'Error al crear el pedido']);
@@ -154,84 +163,54 @@ if ($action === 'pay') {
     }
 
     // --- Enviar emails ---
+    require_once __DIR__ . '/../config/email.php';
     $proveedor_email = 'proveedores@shoprive.com';
     $shop_name = 'ShopRive';
     $nombre = $pedido['nombre'];
     $email = $pedido['email'];
 
+    $itemsData = [];
+    foreach ($items as $item) {
+      $itemsData[] = ['nombre' => $item['nombre'], 'precio' => $item['precio'], 'cantidad' => $item['cantidad']];
+    }
+
+    // Email al cliente: pago confirmado
+    enviarEmailTipo('pago_confirmado', $email, $pedido, $itemsData, ['cardLast4' => substr($card_number, -4)]);
+
+    // Email al cliente: factura
+    enviarEmailTipo('factura', $email, $pedido, $itemsData);
+
+    // Email al proveedor
+    $totalFormatted = '$' . number_format(floatval($pedido['total']), 0, ',', '.');
+    $labels = ['transferencia' => 'Transferencia Bancaria', 'tarjeta' => 'Tarjeta de Crédito/Débito', 'qr' => 'QR - Cuenta DNI', 'efectivo' => 'Efectivo', 'mercadopago' => 'Mercado Pago'];
+    $metodoLabel = $labels[$pedido['metodo_pago']] ?? $pedido['metodo_pago'];
+    $envioLabels = ['domicilio' => 'Envío a domicilio', 'retiro' => 'Retiro en local'];
+    $envioLabel = $envioLabels[$pedido['tipo_envio']] ?? $pedido['tipo_envio'];
     $itemsHtml = '';
     foreach ($items as $item) {
       $subtotal = floatval($item['precio']) * intval($item['cantidad']);
       $itemsHtml .= "<tr><td style='padding:8px;border-bottom:1px solid #ddd;'>{$item['nombre']}</td><td style='padding:8px;border-bottom:1px solid #ddd;text-align:center;'>{$item['cantidad']}</td><td style='padding:8px;border-bottom:1px solid #ddd;text-align:right;'>$" . number_format(floatval($item['precio']), 0, ',', '.') . "</td><td style='padding:8px;border-bottom:1px solid #ddd;text-align:right;'>$" . number_format($subtotal, 0, ',', '.') . "</td></tr>";
     }
-
-    $totalFormatted = '$' . number_format(floatval($pedido['total']), 0, ',', '.');
-    $labels = ['transferencia' => 'Transferencia Bancaria', 'tarjeta' => 'Tarjeta de Crédito/Débito', 'qr' => 'QR - Cuenta DNI', 'efectivo' => 'Efectivo', 'mercadopago' => 'Mercado Pago'];
-    $metodoLabel = $labels[$pedido['metodo_pago']] ?? $pedido['metodo_pago'];
-
-    $envioLabels = ['domicilio' => 'Envío a domicilio', 'retiro' => 'Retiro en local'];
-    $envioLabel = $envioLabels[$pedido['tipo_envio']] ?? $pedido['tipo_envio'];
-
-    if ($pedido['tipo_envio'] === 'retiro') {
-      $direccionHtml = '<p><strong>Dirección de retiro:</strong> Av. Corrientes 1234, Buenos Aires (nuestro local)</p>';
-    } else {
-      $dirDetalle = $pedido['direccion'];
-      if (!empty($pedido['localidad'])) $dirDetalle .= ', ' . $pedido['localidad'];
-      $direccionHtml = '<p><strong>Dirección de envío:</strong> ' . $dirDetalle . '</p>';
-      if (!empty($pedido['entre_calles'])) $direccionHtml .= '<p><strong>Entre calles:</strong> ' . $pedido['entre_calles'] . '</p>';
-      if (!empty($pedido['coordenadas'])) $direccionHtml .= '<p><strong>Coordenadas:</strong> ' . $pedido['coordenadas'] . '</p>';
-      if (!empty($pedido['comentarios_ubicacion'])) $direccionHtml .= '<p><strong>Comentarios:</strong> ' . $pedido['comentarios_ubicacion'] . '</p>';
-    }
-
-    $facturaHtml = "<p><strong>Factura electrónica:</strong> Nº {$pedido['numero_factura']} - CAE: {$pedido['cae']}</p>";
-
-    // Email al cliente
-    $subjectCliente = "=?UTF-8?B?" . base64_encode("Pago Confirmado - Pedido #$pedido_id - $shop_name") . "?=";
-    $bodyCliente = "
-    <html><body style='font-family:Arial,sans-serif;background:#f5f5f5;padding:20px;'>
-    <div style='max-width:600px;margin:auto;background:#fff;border-radius:12px;padding:32px;'>
-    <h2 style='color:#6c5ce7;'>¡Pago recibido, $nombre!</h2>
-    <p>Tu pedido <strong>#$pedido_id</strong> fue confirmado y ya está en proceso.</p>
-    <p>Te vamos a notificar cuando sea enviado.</p>
-    <table style='width:100%;border-collapse:collapse;margin:20px 0;'>
-    <tr><th style='text-align:left;padding:8px;border-bottom:2px solid #6c5ce7;'>Producto</th><th style='text-align:center;padding:8px;border-bottom:2px solid #6c5ce7;'>Cant.</th><th style='text-align:right;padding:8px;border-bottom:2px solid #6c5ce7;'>Precio</th><th style='text-align:right;padding:8px;border-bottom:2px solid #6c5ce7;'>Subtotal</th></tr>
-    $itemsHtml
-    <tr><td colspan='3' style='text-align:right;padding:12px;font-weight:700;font-size:1.1rem;'>Total:</td><td style='text-align:right;padding:12px;font-weight:700;font-size:1.1rem;color:#fd79a8;'>$totalFormatted</td></tr>
-    </table>
-    <p><strong>Método de pago:</strong> $metodoLabel</p>
-    <p><strong>Forma de envío:</strong> $envioLabel</p>
-    $direccionHtml
-    $facturaHtml
-    <p style='font-size:0.85rem;'>Descargá tu factura desde el panel de administración o solicitándola a soporte@shoprive.com</p>
-    <hr style='border:none;border-top:1px solid #eee;margin:20px 0;'>
-    <p style='color:#888;font-size:0.8rem;'>$shopName - Av. Corrientes 1234, Buenos Aires, Argentina</p>
-    </div></body></html>";
-
-    $headersCliente = "MIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nFrom: $shopName <noreply@shoprive.com>\r\n";
-    @mail($email, $subjectCliente, $bodyCliente, $headersCliente);
-
-    // Email al proveedor
-    $subjectProv = "=?UTF-8?B?" . base64_encode("Pago Recibido - Pedido #$pedido_id - $shopName") . "?=";
+    $subjectProv = "=?UTF-8?B?" . base64_encode("Nuevo Pago - Pedido #{$pedido['id']} - $shop_name") . "?=";
     $bodyProv = "
     <html><body style='font-family:Arial,sans-serif;background:#f5f5f5;padding:20px;'>
     <div style='max-width:600px;margin:auto;background:#fff;border-radius:12px;padding:32px;'>
-    <h2 style='color:#6c5ce7;'>Pago Confirmado - Pedido #$pedido_id</h2>
+    <h2 style='color:#6c5ce7;'>Nuevo Pago Confirmado - Pedido #{$pedido['id']}</h2>
     <p><strong>Cliente:</strong> {$pedido['nombre']}</p>
     <p><strong>Email:</strong> {$pedido['email']}</p>
     <p><strong>Dirección:</strong> " . ($pedido['tipo_envio'] === 'retiro' ? 'Retiro en local - Av. Corrientes 1234' : $pedido['direccion']) . "</p>
-    <p><strong>Forma de envío:</strong> $envioLabel</p>
-    <p><strong>Método de pago:</strong> $metodoLabel</p>
+    <p><strong>Envío:</strong> $envioLabel</p>
+    <p><strong>Pago:</strong> $metodoLabel</p>
     <p><strong>Tarjeta:</strong> **** **** **** " . substr($card_number, -4) . "</p>
-    $facturaHtml
+    <p><strong>Factura:</strong> {$pedido['numero_factura']} — CAE: {$pedido['cae']}</p>
     <table style='width:100%;border-collapse:collapse;margin:20px 0;'>
     <tr><th style='text-align:left;padding:8px;border-bottom:2px solid #6c5ce7;'>Producto</th><th style='text-align:center;padding:8px;border-bottom:2px solid #6c5ce7;'>Cant.</th><th style='text-align:right;padding:8px;border-bottom:2px solid #6c5ce7;'>Precio</th><th style='text-align:right;padding:8px;border-bottom:2px solid #6c5ce7;'>Subtotal</th></tr>
     $itemsHtml
     <tr><td colspan='3' style='text-align:right;padding:12px;font-weight:700;font-size:1.1rem;'>Total:</td><td style='text-align:right;padding:12px;font-weight:700;font-size:1.1rem;color:#fd79a8;'>$totalFormatted</td></tr>
     </table>
-    <p style='color:#888;font-size:0.9rem;'>Preparar pedido para envío.</p>
+    <p style='color:#888;font-size:0.9rem;'>Preparar pedido para envío/retiro.</p>
     </div></body></html>";
-
-    $headersProv = "MIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nFrom: $shopName <noreply@shoprive.com>\r\n";
+    $headersProv = "MIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nFrom: $shop_name <noreply@shoprive.com>\r\n";
     @mail($proveedor_email, $subjectProv, $bodyProv, $headersProv);
 
     echo json_encode(['success' => true, 'pedido_id' => $pedido_id, 'message' => 'Pago procesado con éxito']);
