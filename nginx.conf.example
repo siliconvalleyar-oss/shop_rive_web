@@ -1,0 +1,67 @@
+# ------------------------------------------------------------------
+# nginx.conf.example - ShopRive
+# Copy this file to your nginx sites-available/ directory.
+# Adjust paths, server_name, and fastcgi_pass as needed.
+# ------------------------------------------------------------------
+
+server {
+    listen 80;
+    server_name shoprive.local;
+
+    # Change this to the absolute path of the project
+    root /var/www/shoprive;
+    index index.php index.html;
+
+    charset utf-8;
+
+    # ------------------------------------------------------------------
+    # Security: Protect sensitive directories
+    # ------------------------------------------------------------------
+    location ~ ^/(data|config|scripts)/ {
+        deny all;
+        return 404;
+    }
+
+    location ~ /\. {
+        deny all;
+        return 404;
+    }
+
+    # ------------------------------------------------------------------
+    # PHP-FPM passthrough
+    # ------------------------------------------------------------------
+    location ~ \.php$ {
+        try_files $uri =404;
+        # Adjust socket path for your system:
+        #   Debian/Ubuntu: unix:/var/run/php/php8.2-fpm.sock
+        #   Arch/Manjaro:  unix:/run/php-fpm/php-fpm.sock
+        #   macOS (homebrew): unix:/usr/local/var/run/php-fpm.sock
+        fastcgi_pass  unix:/run/php-fpm/php-fpm.sock;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+        include       fastcgi_params;
+    }
+
+    # ------------------------------------------------------------------
+    # Static asset caching
+    # ------------------------------------------------------------------
+    location ~* \.(css|js|png|jpg|jpeg|svg|riv)$ {
+        expires 30d;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
+    # ------------------------------------------------------------------
+    # Deny access to dotfiles
+    # ------------------------------------------------------------------
+    location ~ /\. {
+        deny all;
+        return 404;
+    }
+
+    # ------------------------------------------------------------------
+    # Logs
+    # ------------------------------------------------------------------
+    access_log /var/log/nginx/shoprive-access.log;
+    error_log  /var/log/nginx/shoprive-error.log;
+}

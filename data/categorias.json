@@ -1,0 +1,26 @@
+[
+    {
+        "nombre": "Electr\u00f3nica",
+        "slug": "electronica",
+        "riv_file": "hero-ui-animation",
+        "id": 1
+    },
+    {
+        "nombre": "Moda",
+        "slug": "moda",
+        "riv_file": "shoe-showcase",
+        "id": 2
+    },
+    {
+        "nombre": "Hogar",
+        "slug": "hogar",
+        "riv_file": "rotating-can",
+        "id": 3
+    },
+    {
+        "nombre": "Deportes",
+        "slug": "deportes",
+        "riv_file": "off_road_car_0_6",
+        "id": 4
+    }
+]

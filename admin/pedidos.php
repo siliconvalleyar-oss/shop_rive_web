@@ -97,16 +97,23 @@ foreach ($pedidos as $p) {
         ?>
         <div class="order-card">
           <div class="order-header">
-            <h3>Pedido #<?= $p['id'] ?> <span class="estado-badge" style="background:<?= $estadoColors[$p['estado']] ?? '#888' ?>33;color:<?= $estadoColors[$p['estado']] ?? '#888' ?>"><?= $estados[$p['estado']] ?? $p['estado'] ?></span></h3>
-            <form method="POST" style="display:flex;gap:8px;align-items:center;">
-              <input type="hidden" name="id" value="<?= $p['id'] ?>">
-              <select name="estado" class="estado-select">
-                <?php foreach ($estados as $k => $v): ?>
-                  <option value="<?= $k ?>" <?= $k === $p['estado'] ? 'selected' : '' ?>><?= $v ?></option>
-                <?php endforeach; ?>
-              </select>
-              <button class="btn-sm" style="padding:6px 14px;border-radius:8px;border:1px solid var(--primary);background:transparent;color:var(--primary);cursor:pointer;">Actualizar</button>
-            </form>
+            <h3>Pedido #<?= $p['id'] ?> <span class="estado-badge" style="background:<?= $estadoColors[$p['estado']] ?? '#888' ?>33;color:<?= $estadoColors[$p['estado']] ?? '#888' ?>"><?= $estados[$p['estado']] ?? $p['estado'] ?></span>
+              <?php if (!empty($p['numero_factura'])): ?>
+                <span style="font-size:0.8rem;font-weight:400;color:var(--success);margin-left:8px;">Factura <?= $p['numero_factura'] ?></span>
+              <?php endif; ?>
+            </h3>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <a href="factura.php?id=<?= $p['id'] ?>" class="btn-sm" style="padding:6px 14px;border-radius:8px;border:1px solid var(--success);background:transparent;color:var(--success);cursor:pointer;text-decoration:none;font-size:0.85rem;" target="_blank">Factura</a>
+              <form method="POST" style="display:flex;gap:8px;align-items:center;">
+                <input type="hidden" name="id" value="<?= $p['id'] ?>">
+                <select name="estado" class="estado-select">
+                  <?php foreach ($estados as $k => $v): ?>
+                    <option value="<?= $k ?>" <?= $k === $p['estado'] ? 'selected' : '' ?>><?= $v ?></option>
+                  <?php endforeach; ?>
+                </select>
+                <button class="btn-sm" style="padding:6px 14px;border-radius:8px;border:1px solid var(--primary);background:transparent;color:var(--primary);cursor:pointer;">Actualizar</button>
+              </form>
+            </div>
           </div>
 
           <div class="order-meta">
@@ -115,6 +122,10 @@ foreach ($pedidos as $p) {
             <span><strong>Teléfono:</strong> <?= htmlspecialchars($p['telefono']) ?></span>
             <span><strong>Fecha:</strong> <?= $p['created_at'] ?? '-' ?></span>
             <span><strong>Pago:</strong> <?= $metodoLabels[$p['metodo_pago']] ?? $p['metodo_pago'] ?></span>
+            <?php if (!empty($p['numero_factura'])): ?>
+            <span><strong>Factura:</strong> <?= $p['numero_factura'] ?></span>
+            <span><strong>CAE:</strong> <?= $p['cae'] ?></span>
+            <?php endif; ?>
             <span><strong>Envío:</strong> <?= $envioLabels[$p['tipo_envio'] ?? 'domicilio'] ?? 'A domicilio' ?></span>
             <?php if (($p['tipo_envio'] ?? 'domicilio') !== 'retiro'): ?>
             <span style="grid-column:1/-1;"><strong>Dirección:</strong> <?= htmlspecialchars($p['direccion']) ?><?= !empty($p['localidad']) ? ', ' . htmlspecialchars($p['localidad']) : '' ?></span>

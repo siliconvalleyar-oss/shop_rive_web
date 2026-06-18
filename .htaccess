@@ -1,0 +1,49 @@
+# ------------------------------------------------------------------
+# .htaccess - ShopRive
+# Apache configuration for security, caching, and URL management
+# ------------------------------------------------------------------
+
+# --- Security: Protect sensitive directories ---
+RewriteEngine On
+RewriteRule ^data/ - [F,L]
+RewriteRule ^config/ - [F,L]
+RewriteRule ^\.git/ - [F,L]
+RewriteRule ^scripts/ - [F,L]
+RewriteRule ^\.htaccess - [F,L]
+
+# --- Disable directory listing ---
+Options -Indexes
+
+# --- Set index file ---
+DirectoryIndex index.php index.html
+
+# --- Error pages ---
+ErrorDocument 403 /index.php
+ErrorDocument 404 /index.php
+ErrorDocument 500 /index.php
+
+# --- Static asset caching ---
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType text/javascript "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/svg+xml "access plus 1 month"
+  ExpiresByType application/octet-stream "access plus 1 month"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(css|js|png|jpg|jpeg|svg|riv)$">
+    Header set Cache-Control "max-age=2592000, public"
+  </FilesMatch>
+</IfModule>
+
+# --- Character set ---
+AddDefaultCharset UTF-8
+
+# --- Protect hidden files ---
+<FilesMatch "^\.">
+  Require all denied
+</FilesMatch>

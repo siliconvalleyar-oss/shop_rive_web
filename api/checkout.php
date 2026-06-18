@@ -118,8 +118,21 @@ if ($action === 'pay') {
       $stmtStock->execute([intval($item['cantidad']), intval($item['producto_id']), intval($item['cantidad'])]);
     }
 
-    // Marcar pedido como confirmado
-    $pdo->prepare("UPDATE pedidos SET estado = 'confirmado' WHERE id = ?")->execute([$pedido_id]);
+    // Generar datos de facturación
+    $dataFile = __DIR__ . '/../data/facturacion.json';
+    $factData = file_exists($dataFile) ? (json_decode(file_get_contents($dataFile), true) ?: []) : [];
+    if (!isset($factData['ultimo_numero'])) $factData['ultimo_numero'] = 0;
+    $factData['ultimo_numero']++;
+    $numeroFactura = '0001-' . str_pad($factData['ultimo_numero'], 8, '0', STR_PAD_LEFT);
+    $cae = str_pad(random_int(0, 99999999999999), 14, '0', STR_PAD_LEFT);
+    $caeVto = date('d/m/Y', strtotime('+30 days'));
+    $fechaFactura = date('d/m/Y');
+    file_put_contents($dataFile, json_encode($factData));
+
+    // Marcar pedido como confirmado y guardar factura
+    $pdo->prepare("UPDATE pedidos SET estado = 'confirmado', numero_factura = ?, cae = ?, cae_vencimiento = ?, fecha_factura = ? WHERE id = ?")->execute([$numeroFactura, $cae, $caeVto, $fechaFactura, $pedido_id]);
+    $pedido['numero_factura'] = $numeroFactura;
+    $pedido['cae'] = $cae;
 
     // Vaciar carrito del usuario si está logueado
     $usuario_id = $_SESSION['user_id'] ?? null;
@@ -157,6 +170,8 @@ if ($action === 'pay') {
       if (!empty($pedido['comentarios_ubicacion'])) $direccionHtml .= '<p><strong>Comentarios:</strong> ' . $pedido['comentarios_ubicacion'] . '</p>';
     }
 
+    $facturaHtml = "<p><strong>Factura electrónica:</strong> Nº {$pedido['numero_factura']} - CAE: {$pedido['cae']}</p>";
+
     // Email al cliente
     $subjectCliente = "=?UTF-8?B?" . base64_encode("Pago Confirmado - Pedido #$pedido_id - $shop_name") . "?=";
     $bodyCliente = "
@@ -173,6 +188,8 @@ if ($action === 'pay') {
     <p><strong>Método de pago:</strong> $metodoLabel</p>
     <p><strong>Forma de envío:</strong> $envioLabel</p>
     $direccionHtml
+    $facturaHtml
+    <p style='font-size:0.85rem;'>Descargá tu factura desde el panel de administración o solicitándola a soporte@shoprive.com</p>
     <hr style='border:none;border-top:1px solid #eee;margin:20px 0;'>
     <p style='color:#888;font-size:0.8rem;'>$shopName - Av. Corrientes 1234, Buenos Aires, Argentina</p>
     </div></body></html>";
@@ -192,6 +209,7 @@ if ($action === 'pay') {
     <p><strong>Forma de envío:</strong> $envioLabel</p>
     <p><strong>Método de pago:</strong> $metodoLabel</p>
     <p><strong>Tarjeta:</strong> **** **** **** " . substr($card_number, -4) . "</p>
+    $facturaHtml
     <table style='width:100%;border-collapse:collapse;margin:20px 0;'>
     <tr><th style='text-align:left;padding:8px;border-bottom:2px solid #6c5ce7;'>Producto</th><th style='text-align:center;padding:8px;border-bottom:2px solid #6c5ce7;'>Cant.</th><th style='text-align:right;padding:8px;border-bottom:2px solid #6c5ce7;'>Precio</th><th style='text-align:right;padding:8px;border-bottom:2px solid #6c5ce7;'>Subtotal</th></tr>
     $itemsHtml
