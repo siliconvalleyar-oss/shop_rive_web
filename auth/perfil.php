@@ -50,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mi Perfil - ShopRive</title>
   <link rel="stylesheet" href="../css/style.css">
+  <?php require_once __DIR__ . '/../config/apariencia.php'; renderThemeStyles(); ?>
   <style>
     .auth-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; background: var(--bg); }
     .auth-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 48px; width: 100%; max-width: 480px; animation: fadeInUp 0.5s ease; }

@@ -24,6 +24,18 @@ $defaults = [
     'redes_facebook' => 'https://facebook.com/shoprive',
     'redes_instagram' => 'https://instagram.com/shoprive',
     'redes_twitter' => 'https://twitter.com/shoprive',
+    'color_primary' => '#6c5ce7',
+    'color_accent' => '#fd79a8',
+    'color_bg' => '#0a0a1a',
+    'color_bg_card' => '#12122a',
+    'color_bg_card_hover' => '#1a1a3e',
+    'color_text' => '#ffffff',
+    'color_text_muted' => '#888888',
+    'color_success' => '#00b894',
+    'color_border' => '#2a2a4a',
+    'font_family' => "'Segoe UI', system-ui, -apple-system, sans-serif",
+    'font_heading' => "'Segoe UI', system-ui, -apple-system, sans-serif",
+    'font_size_base' => '16px',
 ];
 
 foreach ($defaults as $k => $v) {
@@ -45,6 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Configuración - Admin ShopRive</title>
   <link rel="stylesheet" href="../css/style.css">
+  <?php require_once __DIR__ . '/../config/apariencia.php'; renderThemeStyles(); ?>
   <style>
     .admin-layout { display: flex; min-height: 100vh; }
     .admin-sidebar { width: 260px; background: var(--bg-card); border-right: 1px solid var(--border); padding: 24px; flex-shrink: 0; }
@@ -161,6 +174,112 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <div class="form-group">
             <label>X / Twitter URL</label>
             <input type="url" name="redes_twitter" value="<?= htmlspecialchars($config['redes_twitter']) ?>">
+          </div>
+        </div>
+
+        <div class="config-section">
+          <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>Apariencia</h2>
+          <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:16px;">Personalizá los colores y tipografía de la tienda. Los cambios se aplican en vivo.</p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;">
+            <div class="form-group">
+              <label><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--primary);vertical-align:middle;margin-right:6px;"></span>Color primario</label>
+              <input type="color" name="color_primary" value="<?= $config['color_primary'] ?>" style="height:48px;padding:4px;cursor:pointer;">
+            </div>
+            <div class="form-group">
+              <label><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--accent);vertical-align:middle;margin-right:6px;"></span>Color de acento</label>
+              <input type="color" name="color_accent" value="<?= $config['color_accent'] ?>" style="height:48px;padding:4px;cursor:pointer;">
+            </div>
+            <div class="form-group">
+              <label><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--bg);vertical-align:middle;margin-right:6px;border:1px solid var(--border);"></span>Fondo</label>
+              <input type="color" name="color_bg" value="<?= $config['color_bg'] ?>" style="height:48px;padding:4px;cursor:pointer;">
+            </div>
+            <div class="form-group">
+              <label><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--bg-card);vertical-align:middle;margin-right:6px;border:1px solid var(--border);"></span>Fondo tarjetas</label>
+              <input type="color" name="color_bg_card" value="<?= $config['color_bg_card'] ?>" style="height:48px;padding:4px;cursor:pointer;">
+            </div>
+            <div class="form-group">
+              <label><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--bg-card-hover);vertical-align:middle;margin-right:6px;border:1px solid var(--border);"></span>Fondo tarjetas hover</label>
+              <input type="color" name="color_bg_card_hover" value="<?= $config['color_bg_card_hover'] ?>" style="height:48px;padding:4px;cursor:pointer;">
+            </div>
+            <div class="form-group">
+              <label><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--text);vertical-align:middle;margin-right:6px;border:1px solid var(--border);"></span>Texto</label>
+              <input type="color" name="color_text" value="<?= $config['color_text'] ?>" style="height:48px;padding:4px;cursor:pointer;">
+            </div>
+            <div class="form-group">
+              <label><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--text-muted);vertical-align:middle;margin-right:6px;border:1px solid var(--border);"></span>Texto secundario</label>
+              <input type="color" name="color_text_muted" value="<?= $config['color_text_muted'] ?>" style="height:48px;padding:4px;cursor:pointer;">
+            </div>
+            <div class="form-group">
+              <label><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--success);vertical-align:middle;margin-right:6px;"></span>Éxito</label>
+              <input type="color" name="color_success" value="<?= $config['color_success'] ?>" style="height:48px;padding:4px;cursor:pointer;">
+            </div>
+            <div class="form-group">
+              <label><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--border);vertical-align:middle;margin-right:6px;"></span>Bordes</label>
+              <input type="color" name="color_border" value="<?= $config['color_border'] ?>" style="height:48px;padding:4px;cursor:pointer;">
+            </div>
+          </div>
+          <div class="form-row" style="margin-top:16px;">
+            <div class="form-group">
+              <label>Fuente general</label>
+              <select name="font_family" style="padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);outline:none;width:100%;">
+                <?php
+                $fonts = [
+                  "'Segoe UI', system-ui, -apple-system, sans-serif" => 'Sistema (Segoe UI)',
+                  "'Inter', system-ui, sans-serif" => 'Inter',
+                  "'Poppins', sans-serif" => 'Poppins',
+                  "'Roboto', sans-serif" => 'Roboto',
+                  "'Montserrat', sans-serif" => 'Montserrat',
+                  "'Open Sans', sans-serif" => 'Open Sans',
+                  "'Nunito', sans-serif" => 'Nunito',
+                  "'Raleway', sans-serif" => 'Raleway',
+                  "'DM Sans', sans-serif" => 'DM Sans',
+                  "'Outfit', sans-serif" => 'Outfit',
+                  "'Plus Jakarta Sans', sans-serif" => 'Plus Jakarta Sans',
+                  "'Segoe UI', 'Roboto', 'Helvetica', Arial, sans-serif" => 'Segoe UI Stack',
+                ];
+                $current = $config['font_family'] ?? "'Segoe UI', system-ui, -apple-system, sans-serif";
+                foreach ($fonts as $val => $label):
+                  $sel = $val === $current ? 'selected' : '';
+                ?>
+                  <option value="<?= htmlspecialchars($val) ?>" <?= $sel ?>><?= $label ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Fuente de títulos</label>
+              <select name="font_heading" style="padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);outline:none;width:100%;">
+                <?php
+                $currentH = $config['font_heading'] ?? "'Segoe UI', system-ui, -apple-system, sans-serif";
+                foreach ($fonts as $val => $label):
+                  $sel = $val === $currentH ? 'selected' : '';
+                ?>
+                  <option value="<?= htmlspecialchars($val) ?>" <?= $sel ?>><?= $label ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:16px;">
+            <label>Tamaño de fuente base</label>
+            <select name="font_size_base" style="padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);outline:none;width:100%;">
+              <?php
+              $sizes = ['14px', '15px', '16px', '17px', '18px', '20px'];
+              $currentS = $config['font_size_base'] ?? '16px';
+              foreach ($sizes as $s):
+                $sel = $s === $currentS ? 'selected' : '';
+              ?>
+                <option value="<?= $s ?>" <?= $sel ?>><?= $s ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <div style="margin-top:16px;padding:16px;background:var(--bg);border-radius:12px;border:1px solid var(--border);">
+            <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:8px;">Vista previa</div>
+            <div style="font-size:1.2rem;font-weight:700;color:var(--text);margin-bottom:4px;font-family:var(--font-heading);">Texto de ejemplo — Título</div>
+            <div style="font-size:0.95rem;color:var(--text-muted);">Este es un párrafo de ejemplo con <span style="color:var(--primary);">color primario</span> y <span style="color:var(--accent);">color de acento</span>.</div>
+            <div style="display:flex;gap:12px;margin-top:12px;">
+              <span style="background:var(--primary);color:#fff;padding:6px 16px;border-radius:8px;font-size:0.85rem;">Botón primario</span>
+              <span style="background:var(--accent);color:#fff;padding:6px 16px;border-radius:8px;font-size:0.85rem;">Botón acento</span>
+              <span style="color:var(--success);font-size:0.85rem;">✓ Éxito</span>
+            </div>
           </div>
         </div>
 

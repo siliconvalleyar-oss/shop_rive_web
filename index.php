@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ShopRive - Tienda Online</title>
   <link rel="stylesheet" href="css/style.css">
+  <?php require_once __DIR__ . '/config/apariencia.php'; renderThemeStyles(); ?>
   <script src="https://unpkg.com/@rive-app/webgl@2.9.1"></script>
 </head>
 <body data-user="<?= $_SESSION['user_id'] ?? '' ?>" data-rol="<?= $_SESSION['user_rol'] ?? '' ?>">

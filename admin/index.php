@@ -42,6 +42,7 @@ $conciliados = array_slice(array_values($confirmados), 0, 5);
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel Admin - ShopRive</title>
   <link rel="stylesheet" href="../css/style.css">
+  <?php require_once __DIR__ . '/../config/apariencia.php'; renderThemeStyles(); ?>
   <style>
     .admin-layout { display: flex; min-height: 100vh; }
     .admin-sidebar { width: 260px; background: var(--bg-card); border-right: 1px solid var(--border); padding: 24px; flex-shrink: 0; }
