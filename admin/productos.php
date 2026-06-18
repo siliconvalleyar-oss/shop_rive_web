@@ -99,6 +99,7 @@ $productos = $pdo->query("SELECT * FROM productos ORDER BY id")->fetchAll();
       <h2>ShopRive Admin</h2>
       <a href="index.php">Dashboard</a>
       <a href="productos.php" class="active">Productos</a>
+      <a href="categorias.php">Categorías</a>
       <a href="pedidos.php">Pedidos</a>
       <a href="usuarios.php">Usuarios</a>
       <a href="../auth/logout.php">Cerrar Sesión</a>

@@ -15,8 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id'], $_POST['estado'
 
 $pedidos = $pdo->query("SELECT * FROM pedidos ORDER BY id DESC")->fetchAll();
 
-$estados = ['pendiente' => 'Pendiente', 'confirmado' => 'Confirmado', 'enviado' => 'Enviado', 'entregado' => 'Entregado', 'cancelado' => 'Cancelado'];
-$estadoColors = ['pendiente' => '#fdcb6e', 'confirmado' => '#6c5ce7', 'enviado' => '#00b894', 'entregado' => '#00cec9', 'cancelado' => '#e17055'];
+$estados = ['pendiente' => 'Pendiente', 'confirmado' => 'Confirmado', 'saliendo' => 'Saliendo', 'salio' => 'Salió', 'no_salio' => 'No salió', 'se_retiro' => 'Se retiró', 'entregado' => 'Entregado', 'cancelado' => 'Cancelado'];
+$estadoColors = ['pendiente' => '#fdcb6e', 'confirmado' => '#6c5ce7', 'saliendo' => '#00b894', 'salio' => '#00cec9', 'no_salio' => '#e17055', 'se_retiro' => '#a29bfe', 'entregado' => '#00b894', 'cancelado' => '#e17055'];
 $envioLabels = ['domicilio' => 'A domicilio', 'retiro' => 'Retiro en local'];
 $metodoLabels = ['tarjeta' => 'Tarjeta', 'transferencia' => 'Transf.', 'qr' => 'Cuenta DNI', 'efectivo' => 'Efectivo', 'mercadopago' => 'Mercado Pago'];
 
@@ -71,6 +71,7 @@ foreach ($pedidos as $p) {
       <h2>ShopRive Admin</h2>
       <a href="index.php">Dashboard</a>
       <a href="productos.php">Productos</a>
+      <a href="categorias.php">Categorías</a>
       <a href="pedidos.php" class="active">Pedidos</a>
       <a href="usuarios.php">Usuarios</a>
       <a href="chatbot.php">Chatbot</a>

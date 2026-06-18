@@ -78,6 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <h2>ShopRive Admin</h2>
       <a href="index.php">Dashboard</a>
       <a href="productos.php">Productos</a>
+      <a href="categorias.php">Categorías</a>
       <a href="pedidos.php">Pedidos</a>
       <a href="usuarios.php">Usuarios</a>
       <a href="chatbot.php">Chatbot</a>

@@ -79,6 +79,7 @@ $logs = $pdo->query("SELECT * FROM chatbot_logs ORDER BY id DESC")->fetchAll();
       <h2>ShopRive Admin</h2>
       <a href="index.php">Dashboard</a>
       <a href="productos.php">Productos</a>
+      <a href="categorias.php">Categorías</a>
       <a href="pedidos.php">Pedidos</a>
       <a href="usuarios.php">Usuarios</a>
       <a href="chatbot.php" class="active">Chatbot</a>

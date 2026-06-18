@@ -60,6 +60,7 @@ $usuarios = $pdo->query("SELECT id, nombre, email, rol, created_at FROM usuarios
       <h2>ShopRive Admin</h2>
       <a href="index.php">Dashboard</a>
       <a href="productos.php">Productos</a>
+      <a href="categorias.php">Categorías</a>
       <a href="pedidos.php">Pedidos</a>
       <a href="usuarios.php" class="active">Usuarios</a>
       <a href="chatbot.php">Chatbot</a>

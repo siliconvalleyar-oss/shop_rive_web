@@ -1,13 +1,1 @@
-[
-    {
-        "usuario_id": null,
-        "nombre": "asd",
-        "email": "sdsd@gi.com",
-        "telefono": "sdsd",
-        "direccion": "sd",
-        "metodo_pago": "tarjeta",
-        "total": 206000,
-        "estado": "pendiente",
-        "id": 7
-    }
-]
+[]
