@@ -245,6 +245,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="config-section">
           <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>Apariencia</h2>
           <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:16px;">Personalizá los colores y tipografía de la tienda. Los cambios se aplican en vivo.</p>
+
+          <?php require_once __DIR__ . '/../config/apariencia.php'; $paletas = getPaletas(); ?>
+          <div class="form-group">
+            <label>🎨 Paleta predefinida — seleccioná una y luego hacé clic en "Aplicar paleta"</label>
+            <div style="display:flex;gap:8px;">
+              <select id="paletaSelect" style="flex:1;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);outline:none;">
+                <?php foreach ($paletas as $key => $pal): ?>
+                  <option value="<?= $key ?>"><?= htmlspecialchars($pal['label']) ?></option>
+                <?php endforeach; ?>
+              </select>
+              <button type="button" onclick="aplicarPaleta()" style="padding:12px 20px;background:var(--primary);color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:600;white-space:nowrap;">Aplicar paleta</button>
+            </div>
+            <div id="paletaPreview" style="display:flex;gap:4px;margin-top:8px;border-radius:8px;overflow:hidden;height:32px;">
+              <?php foreach ($paletas as $key => $pal): ?>
+                <?php if ($key === 'default') continue; ?>
+                <div style="flex:1;background:linear-gradient(90deg, <?= implode(', ', array_slice($pal['colors'], 0, 5)) ?>);" title="<?= htmlspecialchars($pal['label']) ?>"></div>
+              <?php endforeach; ?>
+            </div>
+          </div>
+
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;">
             <div class="form-group">
               <label><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--primary);vertical-align:middle;margin-right:6px;"></span>Color primario</label>
@@ -352,5 +372,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </form>
     </main>
   </div>
+  <script>
+  const PALETAS = <?= json_encode(array_map(function($p) { return $p['colors']; }, getPaletas())) ?>;
+  const FIELD_NAMES = ['color_primary','color_accent','color_bg','color_bg_card','color_bg_card_hover','color_text','color_text_muted','color_success','color_border'];
+  function aplicarPaleta() {
+    const key = document.getElementById('paletaSelect').value;
+    const colors = PALETAS[key];
+    if (!colors) return;
+    colors.forEach((c, i) => {
+      const el = document.querySelector(`input[name="${FIELD_NAMES[i]}"]`);
+      if (el) el.value = c;
+    });
+    // trigger a change event on the first color for live preview
+    const first = document.querySelector('input[name="color_primary"]');
+    if (first) first.dispatchEvent(new Event('input', { bubbles: true }));
+    // update palette preview highlight
+    document.querySelectorAll('#paletaPreview > div').forEach((d, i) => d.style.opacity = '0.3');
+    const idx = Object.keys(PALETAS).indexOf(key) - 1;
+    if (idx >= 0) {
+      const divs = document.querySelectorAll('#paletaPreview > div');
+      if (divs[idx]) divs[idx].style.opacity = '1';
+    }
+  }
+  </script>
 </body>
 </html>
