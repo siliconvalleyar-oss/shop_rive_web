@@ -12,7 +12,7 @@ require_once __DIR__ . '/../config/database.php';
 $action = $_GET['action'] ?? '';
 
 if (!$pdo) {
-    echo json_encode(['success' => false, 'error' => 'Error de conexión a la base de datos. ¿Ejecutaste scripts/setup_db.sql?']);
+    echo json_encode(['success' => false, 'error' => 'Error de conexión a la base de datos. ¿Ejecutaste php scripts/setup_db.php?']);
     exit;
 }
 
@@ -36,7 +36,7 @@ switch ($action) {
         }
 
         $hash = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare("INSERT INTO usuarios (nombre, email, password) VALUES (?, ?, ?)");
+        $stmt = $pdo->prepare("INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, 'usuario')");
         $stmt->execute([$nombre, $email, $hash]);
 
         $_SESSION['user_id'] = $pdo->lastInsertId();
@@ -77,11 +77,14 @@ switch ($action) {
 
     case 'session':
         if (isset($_SESSION['user_id'])) {
-            echo json_encode(['success' => true, 'user' => [
-                'id' => $_SESSION['user_id'],
-                'nombre' => $_SESSION['user_nombre'],
-                'rol' => $_SESSION['user_rol']
-            ]]);
+            $stmt = $pdo->prepare("SELECT id, nombre, email, rol, telefono, direccion, localidad FROM usuarios WHERE id = ?");
+            $stmt->execute([$_SESSION['user_id']]);
+            $user = $stmt->fetch();
+            if ($user) {
+                echo json_encode(['success' => true, 'user' => $user]);
+            } else {
+                echo json_encode(['success' => true, 'user' => ['id' => $_SESSION['user_id'], 'nombre' => $_SESSION['user_nombre'], 'rol' => $_SESSION['user_rol']]]);
+            }
         } else {
             echo json_encode(['success' => true, 'user' => null]);
         }

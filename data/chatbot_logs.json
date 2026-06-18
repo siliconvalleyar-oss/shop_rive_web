@@ -1,0 +1,8 @@
+[
+    {
+        "mensaje": "pagar",
+        "respuesta": "Disculpa, no entend\u00ed la consulta. Pod\u00e9s preguntarme por productos, precios, env\u00edos, pagos o garant\u00eda.",
+        "intencion": "default",
+        "id": 1
+    }
+]

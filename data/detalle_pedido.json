@@ -1,0 +1,162 @@
+[
+    {
+        "pedido_id": "1",
+        "producto_id": 3,
+        "nombre": "Zapatillas Urbanas",
+        "precio": 52000,
+        "cantidad": 1,
+        "id": 1
+    },
+    {
+        "pedido_id": "1",
+        "producto_id": 5,
+        "nombre": "L\u00e1mpara LED",
+        "precio": 18000,
+        "cantidad": 1,
+        "id": 2
+    },
+    {
+        "pedido_id": "1",
+        "producto_id": 6,
+        "nombre": "Campera Premium",
+        "precio": 78000,
+        "cantidad": 1,
+        "id": 3
+    },
+    {
+        "pedido_id": "1",
+        "producto_id": 7,
+        "nombre": "Tablet 10\"",
+        "precio": 120000,
+        "cantidad": 1,
+        "id": 4
+    },
+    {
+        "pedido_id": "1",
+        "producto_id": 9,
+        "nombre": "Billetera Elegante",
+        "precio": 22000,
+        "cantidad": 1,
+        "id": 5
+    },
+    {
+        "pedido_id": "2",
+        "producto_id": 1,
+        "nombre": "Auriculares Pro",
+        "precio": 45000,
+        "cantidad": 2,
+        "id": 6
+    },
+    {
+        "pedido_id": "3",
+        "producto_id": 1,
+        "nombre": "Auriculares Pro",
+        "precio": 45000,
+        "cantidad": 1,
+        "id": 7
+    },
+    {
+        "pedido_id": "4",
+        "producto_id": 1,
+        "nombre": "Test",
+        "precio": 100,
+        "cantidad": 1,
+        "id": 8
+    },
+    {
+        "pedido_id": "5",
+        "producto_id": 5,
+        "nombre": "L\u00e1mpara LED",
+        "precio": 18000,
+        "cantidad": 1,
+        "id": 9
+    },
+    {
+        "pedido_id": "5",
+        "producto_id": 2,
+        "nombre": "Reloj Inteligente",
+        "precio": 65000,
+        "cantidad": 1,
+        "id": 10
+    },
+    {
+        "pedido_id": "5",
+        "producto_id": 1,
+        "nombre": "Auriculares Pro",
+        "precio": 45000,
+        "cantidad": 1,
+        "id": 11
+    },
+    {
+        "pedido_id": "5",
+        "producto_id": 6,
+        "nombre": "Campera Premium",
+        "precio": 78000,
+        "cantidad": 1,
+        "id": 12
+    },
+    {
+        "pedido_id": "6",
+        "producto_id": 5,
+        "nombre": "L\u00e1mpara LED",
+        "precio": 18000,
+        "cantidad": 1,
+        "id": 13
+    },
+    {
+        "pedido_id": "6",
+        "producto_id": 2,
+        "nombre": "Reloj Inteligente",
+        "precio": 65000,
+        "cantidad": 1,
+        "id": 14
+    },
+    {
+        "pedido_id": "6",
+        "producto_id": 1,
+        "nombre": "Auriculares Pro",
+        "precio": 45000,
+        "cantidad": 1,
+        "id": 15
+    },
+    {
+        "pedido_id": "6",
+        "producto_id": 6,
+        "nombre": "Campera Premium",
+        "precio": 78000,
+        "cantidad": 1,
+        "id": 16
+    },
+    {
+        "pedido_id": "7",
+        "producto_id": 5,
+        "nombre": "L\u00e1mpara LED",
+        "precio": 18000,
+        "cantidad": 1,
+        "id": 17
+    },
+    {
+        "pedido_id": "7",
+        "producto_id": 2,
+        "nombre": "Reloj Inteligente",
+        "precio": 65000,
+        "cantidad": 1,
+        "id": 18
+    },
+    {
+        "pedido_id": "7",
+        "producto_id": 1,
+        "nombre": "Auriculares Pro",
+        "precio": 45000,
+        "cantidad": 1,
+        "id": 19
+    },
+    {
+        "pedido_id": "7",
+        "producto_id": 6,
+        "nombre": "Campera Premium",
+        "precio": 78000,
+        "cantidad": 1,
+        "id": 20
+    }
+]

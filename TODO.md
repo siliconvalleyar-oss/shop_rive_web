@@ -2,8 +2,8 @@
 
 ## Prioridad Alta
 
-- [ ] **Registro sin MySQL**: Implementar SQLite como fallback para registro/login cuando MariaDB no está disponible
-- [ ] **Catálogo desde DB**: Sincronizar productos entre `setup_db.sql` y el array JS automáticamente vía API
+- [x] **Base de datos autónoma**: Migrado a JSON file DB (sin MySQL, sin SQLite). Correr `php scripts/setup_db.php`
+- [x] **Catálogo desde DB**: Productos servidos desde `api/products.php` con fallback offline
 - [ ] **Panel admin completo**: CRUD de productos, usuarios y pedidos desde `admin/`
 - [ ] **Búsqueda de productos**: Input de búsqueda en el header con filtrado dinámico
 - [ ] **Paginación de productos**: Cargar más productos con scroll infinito o paginación
@@ -11,7 +11,6 @@
 ## Prioridad Media
 
 - [ ] **Más animaciones .riv**: Agregar loaders, spinners, animaciones de transición entre páginas
-- [ ] **Modo oscuro/claro**: Toggle con persistencia en localStorage
 - [ ] **Carrito persistente multi-sesión**: Vincular carrito localStorage al usuario cuando inicia sesión
 - [ ] **Notificaciones push**: Para ofertas y recordatorios de carrito abandonado
 - [ ] **Galería de imágenes por producto**: Múltiples vistas del producto con thumbnails

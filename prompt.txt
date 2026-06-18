@@ -1,13 +1,1 @@
-que al ir a "http://localhost:8080/auth/register.php"
-no crea la cuenta , debe quedar en la base de datos . que al aberlo generado ya se puede ingresar y puede comprar 
-tambien dice esto el mesaje al quere crear un usuario 
-"Error de conexión a la base de datos. ¿Ejecutaste scripts/setup_db.sql?"
-
-
-al presionar agregar al carrito no se agrega nada 
-agregar un archivo todo.md y completarlo para escalar proyecto
-
-
-pushear y sumar cada tag de a un version sumar 0.0.1
-
-
+ agregar o quitar opciones de administrador . ver stock , consultas , agregar o quitar opciones de envio . habilitar o inhabilitar , contacto , uso de chat bot , sistema para que se guarden las charlas con charbot . consultas que hacen los clientes , analisis , dashboard . 

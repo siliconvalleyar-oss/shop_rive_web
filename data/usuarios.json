@@ -1,0 +1,50 @@
+[
+    {
+        "id": 1,
+        "nombre": "Admin",
+        "email": "admin@shoprive.com",
+        "password": "$2y$10$qkZprP0kv0T6yLKRL.qHr.Ot24ostc2Ly5WpyAYGvaji.wvUBlq76",
+        "rol": "admin"
+    },
+    {
+        "id": 2,
+        "nombre": "Usuario Demo",
+        "email": "user@shoprive.com",
+        "password": "$2y$10$qkZprP0kv0T6yLKRL.qHr.Ot24ostc2Ly5WpyAYGvaji.wvUBlq76",
+        "rol": "usuario"
+    },
+    {
+        "nombre": "Test",
+        "email": "test@test.com",
+        "password": "$2y$10$Pv07gnbOosDC9V8jouTfde\/m0Tl4RUpjP4YprcEKdUr8kIVDIXYpO",
+        "id": 3
+    },
+    {
+        "nombre": "Nuevo",
+        "email": "nuevo@test.com",
+        "password": "$2y$10$DaLxUSQK5q8r2mlXpLcdaO0rU4Rjr3DPki2PB.7QP\/8Lg9xTP61Em",
+        "rol": "usuario",
+        "id": 4
+    },
+    {
+        "nombre": "ju",
+        "email": "ju@ju.com",
+        "password": "$2y$10$lLT.UN7Jk0l35GuiJ3Z0peDl1PITEFUt2V6ec6J2M.so3NCafSvBG",
+        "rol": "usuario",
+        "id": 5
+    },
+    {
+        "id": 1,
+        "nombre": "Admin",
+        "email": "admin@shoprive.com",
+        "password": "$2y$10$vqZX.m.zGS.FVhC8chktFufbz0j40bVdzzwzAlu35s4SpQRu0JaOK",
+        "rol": "admin"
+    },
+    {
+        "id": 2,
+        "nombre": "Usuario Demo",
+        "email": "user@shoprive.com",
+        "password": "$2y$10$vqZX.m.zGS.FVhC8chktFufbz0j40bVdzzwzAlu35s4SpQRu0JaOK",
+        "rol": "usuario"
+    }
+]

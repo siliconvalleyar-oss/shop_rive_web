@@ -58,7 +58,7 @@ switch ($action) {
     case 'updateStock':
         if (!$userId) { echo json_encode(['success' => false]); exit; }
         $data = json_decode(file_get_contents('php://input'), true);
-        $stmt = $pdo->prepare("UPDATE productos SET stock = GREATEST(0, stock - ?) WHERE id = ?");
+        $stmt = $pdo->prepare("UPDATE productos SET stock = MAX(0, stock - ?) WHERE id = ?");
         $stmt->execute([(int)$data['cantidad'], (int)$data['producto_id']]);
         echo json_encode(['success' => true]);
         break;

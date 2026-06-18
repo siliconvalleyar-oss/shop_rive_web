@@ -62,19 +62,25 @@ function initRiveAnimations() {
   loadRive('toast-rive', 'assets/riv/success_check.riv');
   loadRive('checkout-rive', 'assets/riv/buy-button-sparkle.riv');
   loadRive('btn-cta-rive', 'assets/riv/glowing-hover-button.riv');
-  loadRive('chat-rive', 'assets/riv/success_check.riv');
-  loadRive('chat-avatar-rive', 'assets/riv/marty.riv');
-  loadRive('ofertas-rive-1', 'assets/riv/buy-button-sparkle.riv');
-  loadRive('ofertas-rive-2', 'assets/riv/glowing-hover-button.riv');
-  loadRive('ofertas-rive-3', 'assets/riv/animated-button.riv');
+  loadRive('chat-rive', 'assets/riv/chat-bot.riv');
+  loadRive('chat-avatar-rive', 'assets/riv/chat-bot.riv');
+  loadRive('chat-toggle-rive', 'assets/riv/chat-icon.riv');
+  loadRive('contacto-chat-rive', 'assets/riv/chat-bot.riv');
 }
 
 function showSection(id) {
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
   const link = document.querySelector(`.nav-link[href="#${id}"]`);
   if (link) link.classList.add('active');
-  const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  if (id === 'contacto') {
+    document.body.classList.add('show-contacto');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    document.body.classList.remove('show-contacto');
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 // --- PRODUCTS ---
@@ -106,9 +112,14 @@ function renderProducts(filter) {
     const card = document.createElement('div');
     card.className = 'product-card';
     card.style.animationDelay = (i * 0.1) + 's';
+    const ext = (p.riv || '').split('.').pop().toLowerCase();
+    const isImg = ['png', 'jpg', 'jpeg', 'svg'].includes(ext);
+    const mediaHtml = isImg
+      ? `<img src="assets/uploads/${p.riv}" style="width:100%;height:200px;object-fit:cover;display:block;">`
+      : `<canvas id="prod-rive-${p.id}" width="280" height="200" style="width:100%;height:200px;"></canvas>`;
     card.innerHTML = `
-      <div style="height:200px;background:${p.color};display:flex;align-items:center;justify-content:center;border-radius:20px 20px 0 0;">
-        <canvas id="prod-rive-${p.id}" width="280" height="200" style="width:100%;height:200px;"></canvas>
+      <div style="height:200px;background:${p.color};display:flex;align-items:center;justify-content:center;border-radius:20px 20px 0 0;overflow:hidden;">
+        ${mediaHtml}
       </div>
       <div class="product-info">
         <div class="product-category">${p.category}</div>
@@ -127,7 +138,7 @@ function renderProducts(filter) {
       </div>
     `;
     grid.appendChild(card);
-    setTimeout(() => loadRive('prod-rive-' + p.id, 'assets/riv/' + p.riv + '.riv'), 100);
+    if (!isImg) setTimeout(() => loadRive('prod-rive-' + p.id, 'assets/riv/' + p.riv + '.riv'), 100);
   });
 }
 
@@ -286,33 +297,229 @@ function updateCart() {
   totalEl.textContent = formatPrice(total);
 }
 
-async function checkout() {
+function obtenerUbicacion() {
+  if (!navigator.geolocation) { showToast('Geolocalización no disponible'); return; }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      document.getElementById('pay-coordenadas').value = pos.coords.latitude + ', ' + pos.coords.longitude;
+      showToast('Ubicación obtenida');
+    },
+    () => showToast('No se pudo obtener la ubicación. Permití el acceso al GPS.')
+  );
+}
+
+function toggleEnvio() {
+  const wrap = document.getElementById('envio-direccion-wrap');
+  if (document.getElementById('pay-envio').value === 'retiro') {
+    wrap.style.display = 'none';
+  } else {
+    wrap.style.display = 'block';
+  }
+}
+
+// --- PAYMENT / CHECKOUT ---
+function checkout() {
   if (cart.length === 0) { showToast('El carrito está vacío'); return; }
 
-  for (const item of cart) {
-    const prod = products.find(p => p.id === item.id);
-    if (prod) prod.stock = Math.max(0, prod.stock - item.qty);
-  }
+  document.getElementById('payment-overlay').classList.add('open');
+  document.getElementById('payment-modal').classList.add('open');
 
   if (userId) {
-    try {
-      await fetch('api/cart.php?action=clear', { method: 'POST' });
-      for (const item of cart) {
-        await fetch('api/cart.php?action=updateStock', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ producto_id: item.id, cantidad: item.qty })
-        });
+    document.getElementById('checkout-choice').style.display = 'none';
+    document.getElementById('payment-form-wrap').style.display = 'block';
+    document.getElementById('payment-success').style.display = 'none';
+    buildPaymentResumen();
+    fetch('api/auth.php?action=session').then(r => r.json()).then(d => {
+      if (d.success && d.user) {
+        document.getElementById('pay-nombre').value = d.user.nombre || '';
+        document.getElementById('pay-email').value = d.user.email || '';
       }
-    } catch (e) {}
+    }).catch(() => {});
+  } else {
+    document.getElementById('checkout-choice').style.display = 'block';
+    document.getElementById('payment-form-wrap').style.display = 'none';
+    document.getElementById('payment-success').style.display = 'none';
+    setTimeout(() => loadRive('checkout-choice-rive', 'assets/riv/buy-button-sparkle.riv'), 100);
   }
+}
 
-  showToast('Compra realizada con éxito 🎉');
-  cart = [];
-  saveCart();
-  updateCart();
-  renderProducts();
-  setTimeout(toggleCart, 1000);
+function goRegister() {
+  window.location.href = 'auth/register.html';
+}
+
+function buildPaymentResumen() {
+  const el = document.getElementById('payment-resumen');
+  let html = '<h3 style="margin-bottom:12px;font-size:1rem;">Resumen del pedido</h3>';
+  let total = 0;
+  cart.forEach(item => {
+    total += item.price * item.qty;
+    html += `<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.9rem;border-bottom:1px solid var(--border);">
+      <span>${item.name} <span style="color:var(--text-muted);">x${item.qty}</span></span>
+      <span style="color:var(--accent);font-weight:600;">${formatPrice(item.price * item.qty)}</span>
+    </div>`;
+  });
+  html += `<div style="display:flex;justify-content:space-between;padding:10px 0 0;font-size:1.1rem;font-weight:700;">
+    <span>Total</span><span style="color:var(--accent);">${formatPrice(total)}</span>
+  </div>`;
+  el.innerHTML = html;
+}
+
+function openPaymentForm() {
+  document.getElementById('checkout-choice').style.display = 'none';
+  document.getElementById('payment-form-wrap').style.display = 'block';
+  document.getElementById('payment-success').style.display = 'none';
+  buildPaymentResumen();
+}
+
+function closePayment() {
+  document.getElementById('payment-overlay').classList.remove('open');
+  document.getElementById('payment-modal').classList.remove('open');
+  setTimeout(() => {
+    if (!userId) {
+      document.getElementById('checkout-choice').style.display = 'block';
+    }
+    document.getElementById('payment-form-wrap').style.display = 'none';
+    document.getElementById('payment-card-step').style.display = 'none';
+    document.getElementById('payment-qr-step').style.display = 'none';
+    document.getElementById('payment-success').style.display = 'none';
+  }, 300);
+}
+
+function showPaymentForm() {
+  document.getElementById('payment-card-step').style.display = 'none';
+  document.getElementById('payment-qr-step').style.display = 'none';
+  document.getElementById('payment-form-wrap').style.display = 'block';
+  document.getElementById('payment-success').style.display = 'none';
+}
+
+function showCardStep(pedidoId) {
+  document.getElementById('payment-form-wrap').style.display = 'none';
+  document.getElementById('payment-card-step').style.display = 'block';
+  document.getElementById('payment-qr-step').style.display = 'none';
+  document.getElementById('payment-success').style.display = 'none';
+  document.getElementById('card-pedido-id').textContent = pedidoId;
+  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  document.getElementById('card-total').textContent = formatPrice(total);
+  setTimeout(() => loadRive('payment-card-rive', 'assets/riv/buy-button-sparkle.riv'), 100);
+}
+
+function showQRStep(pedidoId) {
+  document.getElementById('payment-form-wrap').style.display = 'none';
+  document.getElementById('payment-card-step').style.display = 'none';
+  document.getElementById('payment-qr-step').style.display = 'block';
+  document.getElementById('payment-success').style.display = 'none';
+  document.getElementById('qr-pedido-id').textContent = pedidoId;
+  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  document.getElementById('qr-total').textContent = formatPrice(total);
+  const data = '0002000100000003100012345678901|SHOPRIVE.MERCADO.MIO|' + total;
+  document.getElementById('qr-code-img').src = 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=' + encodeURIComponent(data);
+}
+
+async function submitPayment(e) {
+  e.preventDefault();
+  const btn = document.getElementById('pay-submit-btn');
+  const btnText = document.getElementById('pay-submit-text');
+  const btnRive = document.getElementById('pay-submit-rive');
+  btn.disabled = true;
+  btnText.textContent = 'Creando pedido...';
+  btnRive.style.display = 'inline-block';
+  loadRive('pay-submit-rive', 'assets/riv/buy-button-sparkle.riv');
+
+  const items = cart.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.qty }));
+
+  try {
+    const res = await fetch('api/checkout.php?action=create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nombre: document.getElementById('pay-nombre').value,
+        email: document.getElementById('pay-email').value,
+        telefono: document.getElementById('pay-telefono').value,
+        direccion: document.getElementById('pay-calle')?.value || '',
+        localidad: document.getElementById('pay-localidad')?.value || '',
+        entre_calles: document.getElementById('pay-entre-calles')?.value || '',
+        coordenadas: document.getElementById('pay-coordenadas')?.value || '',
+        comentarios_ubicacion: document.getElementById('pay-comentarios')?.value || '',
+        metodo_pago: document.getElementById('pay-metodo').value,
+        tipo_envio: document.getElementById('pay-envio').value,
+        notas: document.getElementById('pay-notas').value,
+        items: items
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      const metodo = document.getElementById('pay-metodo').value;
+      if (metodo === 'qr') {
+        showQRStep(data.pedido_id);
+      } else {
+        showCardStep(data.pedido_id);
+      }
+    } else {
+      showToast(data.message || 'Error al crear el pedido');
+      btn.disabled = false;
+      btnText.textContent = 'Confirmar Pedido';
+      btnRive.style.display = 'none';
+    }
+  } catch (e) {
+    showToast('Error de conexión. Intentá de nuevo.');
+    btn.disabled = false;
+    btnText.textContent = 'Confirmar Pedido';
+    btnRive.style.display = 'none';
+  }
+}
+
+async function processCardPayment(e) {
+  e.preventDefault();
+  const btn = document.getElementById('card-pay-btn');
+  const btnText = document.getElementById('card-pay-text');
+  btn.disabled = true;
+  btnText.textContent = 'Procesando pago...';
+
+  const pedidoId = document.getElementById('card-pedido-id').textContent;
+  const items = cart.map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.qty }));
+
+  try {
+    const res = await fetch('api/checkout.php?action=pay', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        pedido_id: parseInt(pedidoId),
+        card_name: document.getElementById('card-name').value,
+        card_number: document.getElementById('card-number').value,
+        card_expiry: document.getElementById('card-expiry').value,
+        card_cvv: document.getElementById('card-cvv').value
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      // Pago exitoso → vaciar carrito y stock
+      document.getElementById('payment-card-step').style.display = 'none';
+      document.getElementById('payment-success').style.display = 'block';
+      document.getElementById('payment-success-msg').textContent = 'Pedido #' + data.pedido_id + ' confirmado. Te enviamos un email con los detalles.';
+      setTimeout(() => loadRive('payment-success-rive', 'assets/riv/success_check.riv'), 100);
+
+      for (const item of cart) {
+        const prod = products.find(p => p.id === item.id);
+        if (prod) prod.stock = Math.max(0, prod.stock - item.qty);
+      }
+      if (userId) {
+        try { await fetch('api/cart.php?action=clear', { method: 'POST' }); } catch (e) {}
+      }
+      cart = [];
+      saveCart();
+      updateCart();
+      renderProducts();
+      renderOfertas();
+    } else {
+      showToast(data.message || 'Error al procesar el pago');
+      btn.disabled = false;
+      btnText.textContent = 'Pagar';
+    }
+  } catch (e) {
+    showToast('Error de conexión. Intentá de nuevo.');
+    btn.disabled = false;
+    btnText.textContent = 'Pagar';
+  }
 }
 
 async function loadCartFromDB() {
@@ -352,6 +559,50 @@ function showToast(msg) {
   loadRive('toast-rive', 'assets/riv/success_check.riv');
   clearTimeout(toastTimeout);
   toastTimeout = setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// --- OFERTAS ---
+function renderOfertas() {
+  const grid = document.getElementById('ofertas-grid');
+  if (!grid || products.length === 0) return;
+  const discounts = [15, 20, 25, 30, 35, 40];
+  const ofertaItems = products.filter(p => p.stock > 5).slice(0, 6).map((p, i) => ({
+    ...p,
+    discount: discounts[i % discounts.length]
+  }));
+  grid.innerHTML = '';
+  ofertaItems.forEach((p, i) => {
+    const discountedPrice = Math.round(p.price * (1 - p.discount / 100));
+    const card = document.createElement('div');
+    card.className = 'oferta-card';
+    card.style.animationDelay = (i * 0.1) + 's';
+    const ext = (p.riv || '').split('.').pop().toLowerCase();
+    const isImg = ['png', 'jpg', 'jpeg', 'svg'].includes(ext);
+    const mediaHtml = isImg
+      ? `<img src="assets/uploads/${p.riv}" style="width:100%;height:150px;object-fit:cover;display:block;">`
+      : `<canvas id="oferta-rive-${p.id}" width="200" height="150" style="width:100%;height:150px;"></canvas>`;
+    card.innerHTML = `
+      <div class="oferta-badge">-${p.discount}%</div>
+      <div class="oferta-rive-wrap" style="background:${p.color};">
+        ${mediaHtml}
+      </div>
+      <h3>${p.name}</h3>
+      <div class="oferta-prices">
+        <span class="oferta-original">${formatPrice(p.price)}</span>
+        <span class="oferta-discounted">${formatPrice(discountedPrice)}</span>
+      </div>
+      <div class="oferta-category">${p.category}</div>
+      <button class="add-to-cart" onclick="addToCart(${p.id})">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/>
+        </svg>
+        Agregar
+      </button>
+    `;
+    grid.appendChild(card);
+    if (!isImg) setTimeout(() => loadRive('oferta-rive-' + p.id, 'assets/riv/' + p.riv + '.riv'), 150);
+  });
 }
 
 // --- FILTER ---
@@ -405,7 +656,7 @@ async function sendMessage() {
       <canvas id="chat-avatar-rive" width="28" height="28" class="chat-avatar-canvas"></canvas>
       <div class="chat-bubble">${data.respuesta || 'Disculpa, no entendí.'}</div>`;
     messages.appendChild(botDiv);
-    loadRive('chat-avatar-rive', 'assets/riv/marty.riv');
+    loadRive('chat-avatar-rive', 'assets/riv/chat-bot.riv');
 
   } catch (e) {
     typing.remove();
@@ -415,9 +666,19 @@ async function sendMessage() {
       <canvas id="chat-avatar-rive" width="28" height="28" class="chat-avatar-canvas"></canvas>
       <div class="chat-bubble">Error de conexión. ¿Está funcionando el servidor?</div>`;
     messages.appendChild(botDiv);
+    loadRive('chat-avatar-rive', 'assets/riv/chat-bot.riv');
   }
 
   messages.scrollTop = messages.scrollHeight;
+}
+
+function copyEmail(btn) {
+  const text = btn.dataset.copy || btn.parentElement.querySelector('span, a').textContent.trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+    setTimeout(() => btn.innerHTML = orig, 2000);
+  }).catch(() => {});
 }
 
 function escapeHtml(text) {
@@ -438,9 +699,9 @@ async function checkSession() {
       el.innerHTML = `
         <span style="color:var(--text-muted);font-size:0.85rem;">
           ${data.user.nombre}
-          ${data.user.rol === 'admin' ? '<a href="admin/index.php" style="color:var(--primary);text-decoration:none;">[Admin]</a>' : ''}
+          <a href="auth/perfil.php" style="color:var(--text-muted);text-decoration:none;margin-left:6px;font-size:0.85rem;" title="Mi Perfil">✎</a>
+          ${data.user.rol === 'admin' ? '<a href="admin/index.php" style="color:var(--primary);text-decoration:none;margin-left:6px;">[Admin]</a>' : ''}
           <a href="auth/logout.php" style="color:var(--accent);text-decoration:none;margin-left:8px;">Salir</a>
-          <a href="auth/login.html" style="color:var(--text-muted);text-decoration:none;margin-left:8px;font-size:0.85rem;">Cambiar</a>
         </span>`;
     }
   } catch (e) {}
@@ -451,6 +712,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadProductsFromAPI();
   initRiveAnimations();
   renderProducts();
+  renderOfertas();
   initCarousel();
   await loadCartFromDB();
 });
