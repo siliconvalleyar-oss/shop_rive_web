@@ -30,20 +30,21 @@ CREATE TABLE IF NOT EXISTS productos (
   precio DECIMAL(10,2) NOT NULL,
   riv_file VARCHAR(100) DEFAULT 'car',
   color VARCHAR(7) DEFAULT '#6c5ce7',
+  stock INT DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO productos (nombre, categoria, precio, riv_file, color) VALUES
-  ('Auriculares Pro', 'electronica', 45000, 'hero-ui-animation', '#6c5ce7'),
-  ('Reloj Inteligente', 'electronica', 65000, 'rotating-can', '#fd79a8'),
-  ('Zapatillas Urbanas', 'moda', 52000, 'shoe-showcase', '#00b894'),
-  ('Bolso de Mano', 'moda', 38000, 'purse-360', '#fdcb6e'),
-  ('Lámpara LED', 'hogar', 18000, 'off_road_car_0_6', '#e17055'),
-  ('Campera Premium', 'moda', 78000, 'shoe-showcase', '#00cec9'),
-  ('Tablet 10"', 'electronica', 120000, 'rotating-can', '#a29bfe'),
-  ('Set de Pesas', 'deportes', 35000, 'off_road_car_0_6', '#fab1a0'),
-  ('Billetera Elegante', 'moda', 22000, 'purse-360', '#6c5ce7'),
-  ('Parlante Portátil', 'electronica', 32000, 'hero-ui-animation', '#fd79a8')
+INSERT INTO productos (nombre, categoria, precio, riv_file, color, stock) VALUES
+  ('Auriculares Pro', 'electronica', 45000, 'hero-ui-animation', '#6c5ce7', 25),
+  ('Reloj Inteligente', 'electronica', 65000, 'rotating-can', '#fd79a8', 15),
+  ('Zapatillas Urbanas', 'moda', 52000, 'shoe-showcase', '#00b894', 30),
+  ('Bolso de Mano', 'moda', 38000, 'purse-360', '#fdcb6e', 20),
+  ('Lámpara LED', 'hogar', 18000, 'off_road_car_0_6', '#e17055', 50),
+  ('Campera Premium', 'moda', 78000, 'shoe-showcase', '#00cec9', 12),
+  ('Tablet 10"', 'electronica', 120000, 'rotating-can', '#a29bfe', 8),
+  ('Set de Pesas', 'deportes', 35000, 'off_road_car_0_6', '#fab1a0', 18),
+  ('Billetera Elegante', 'moda', 22000, 'purse-360', '#6c5ce7', 35),
+  ('Parlante Portátil', 'electronica', 32000, 'hero-ui-animation', '#fd79a8', 22)
 ON DUPLICATE KEY UPDATE nombre=nombre;
 
 -- =============================================

@@ -2,18 +2,19 @@
    ShopRive - Main JavaScript
    ============================================ */
 
-// --- PRODUCT DATA (fallback sin DB) ---
-const products = [
-  { id: 1, name: 'Auriculares Pro', category: 'electronica', price: 45000, riv: 'hero-ui-animation', color: '#6c5ce7' },
-  { id: 2, name: 'Reloj Inteligente', category: 'electronica', price: 65000, riv: 'rotating-can', color: '#fd79a8' },
-  { id: 3, name: 'Zapatillas Urbanas', category: 'moda', price: 52000, riv: 'shoe-showcase', color: '#00b894' },
-  { id: 4, name: 'Bolso de Mano', category: 'moda', price: 38000, riv: 'purse-360', color: '#fdcb6e' },
-  { id: 5, name: 'Lámpara LED', category: 'hogar', price: 18000, riv: 'off_road_car_0_6', color: '#e17055' },
-  { id: 6, name: 'Campera Premium', category: 'moda', price: 78000, riv: 'shoe-showcase', color: '#00cec9' },
-  { id: 7, name: 'Tablet 10"', category: 'electronica', price: 120000, riv: 'rotating-can', color: '#a29bfe' },
-  { id: 8, name: 'Set de Pesas', category: 'deportes', price: 35000, riv: 'off_road_car_0_6', color: '#fab1a0' },
-  { id: 9, name: 'Billetera Elegante', category: 'moda', price: 22000, riv: 'purse-360', color: '#6c5ce7' },
-  { id: 10, name: 'Parlante Portátil', category: 'electronica', price: 32000, riv: 'hero-ui-animation', color: '#fd79a8' },
+// --- PRODUCT DATA (cargados desde API con fallback offline) ---
+let products = [];
+const defaultProducts = [
+  { id: 1, name: 'Auriculares Pro', category: 'electronica', price: 45000, riv: 'hero-ui-animation', color: '#6c5ce7', stock: 25 },
+  { id: 2, name: 'Reloj Inteligente', category: 'electronica', price: 65000, riv: 'rotating-can', color: '#fd79a8', stock: 15 },
+  { id: 3, name: 'Zapatillas Urbanas', category: 'moda', price: 52000, riv: 'shoe-showcase', color: '#00b894', stock: 30 },
+  { id: 4, name: 'Bolso de Mano', category: 'moda', price: 38000, riv: 'purse-360', color: '#fdcb6e', stock: 20 },
+  { id: 5, name: 'Lámpara LED', category: 'hogar', price: 18000, riv: 'off_road_car_0_6', color: '#e17055', stock: 50 },
+  { id: 6, name: 'Campera Premium', category: 'moda', price: 78000, riv: 'shoe-showcase', color: '#00cec9', stock: 12 },
+  { id: 7, name: 'Tablet 10"', category: 'electronica', price: 120000, riv: 'rotating-can', color: '#a29bfe', stock: 8 },
+  { id: 8, name: 'Set de Pesas', category: 'deportes', price: 35000, riv: 'off_road_car_0_6', color: '#fab1a0', stock: 18 },
+  { id: 9, name: 'Billetera Elegante', category: 'moda', price: 22000, riv: 'purse-360', color: '#6c5ce7', stock: 35 },
+  { id: 10, name: 'Parlante Portátil', category: 'electronica', price: 32000, riv: 'hero-ui-animation', color: '#fd79a8', stock: 22 },
 ];
 
 let cart = [];
@@ -66,6 +67,26 @@ function initRiveAnimations() {
 }
 
 // --- PRODUCTS ---
+async function loadProductsFromAPI() {
+  try {
+    const res = await fetch('api/products.php');
+    const data = await res.json();
+    if (data.success && data.productos) {
+      products = data.productos.map(p => ({
+        id: parseInt(p.id),
+        name: p.nombre,
+        category: p.categoria,
+        price: parseFloat(p.precio),
+        riv: p.riv_file || 'car',
+        color: p.color || '#6c5ce7',
+        stock: parseInt(p.stock) || 0
+      }));
+      return;
+    }
+  } catch (e) {}
+  products = [...defaultProducts];
+}
+
 function renderProducts(filter) {
   const grid = document.getElementById('products-grid');
   const filtered = filter ? products.filter(p => p.category === filter) : products;
@@ -82,12 +103,15 @@ function renderProducts(filter) {
         <div class="product-category">${p.category}</div>
         <div class="product-name">${p.name}</div>
         <div class="product-price">${formatPrice(p.price)}</div>
-        <button class="add-to-cart" onclick="addToCart(${p.id})">
+        <div style="font-size:0.8rem;color:${p.stock > 5 ? 'var(--success)' : p.stock > 0 ? 'var(--accent)' : 'var(--text-muted)'};margin-bottom:12px;">
+          ${p.stock > 0 ? 'Stock: ' + p.stock : 'Sin stock'}
+        </div>
+        <button class="add-to-cart" onclick="addToCart(${p.id})" ${p.stock <= 0 ? 'disabled style="opacity:0.4;cursor:not-allowed;"' : ''}>
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
             <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/>
           </svg>
-          Agregar al Carrito
+          ${p.stock > 0 ? 'Agregar al Carrito' : 'Sin Stock'}
         </button>
       </div>
     `;
@@ -153,9 +177,15 @@ async function syncCartWithServer() {
 }
 
 async function addToCart(id) {
+  const prod = products.find(p => p.id === id);
+  if (!prod || prod.stock <= 0) { showToast('Producto sin stock'); return; }
+
   const existing = cart.find(item => item.id === id);
+  const qtyInCart = existing ? existing.qty : 0;
+  if (qtyInCart >= prod.stock) { showToast('Stock máximo alcanzado'); return; }
+
   if (existing) { existing.qty++; }
-  else { const p = products.find(p => p.id === id); cart.push({ ...p, qty: 1 }); }
+  else { cart.push({ ...prod, qty: 1 }); }
 
   if (userId) {
     try {
@@ -169,7 +199,7 @@ async function addToCart(id) {
 
   saveCart();
   updateCart();
-  showToast('Agregado: ' + products.find(p => p.id === id).name);
+  showToast('Agregado: ' + prod.name);
   const badge = document.getElementById('cart-badge');
   badge.style.animation = 'none';
   setTimeout(() => badge.style.animation = 'badgePop 0.3s ease', 10);
@@ -247,13 +277,30 @@ function updateCart() {
 
 async function checkout() {
   if (cart.length === 0) { showToast('El carrito está vacío'); return; }
-  if (userId) {
-    try { await fetch('api/cart.php?action=clear', { method: 'POST' }); } catch (e) {}
+
+  for (const item of cart) {
+    const prod = products.find(p => p.id === item.id);
+    if (prod) prod.stock = Math.max(0, prod.stock - item.qty);
   }
+
+  if (userId) {
+    try {
+      await fetch('api/cart.php?action=clear', { method: 'POST' });
+      for (const item of cart) {
+        await fetch('api/cart.php?action=updateStock', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ producto_id: item.id, cantidad: item.qty })
+        });
+      }
+    } catch (e) {}
+  }
+
   showToast('Compra realizada con éxito 🎉');
   cart = [];
   saveCart();
   updateCart();
+  renderProducts();
   setTimeout(toggleCart, 1000);
 }
 
@@ -390,6 +437,7 @@ async function checkSession() {
 
 document.addEventListener('DOMContentLoaded', async () => {
   await checkSession();
+  await loadProductsFromAPI();
   initRiveAnimations();
   renderProducts();
   initCarousel();
