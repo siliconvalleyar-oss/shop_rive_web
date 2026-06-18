@@ -64,6 +64,17 @@ function initRiveAnimations() {
   loadRive('btn-cta-rive', 'assets/riv/glowing-hover-button.riv');
   loadRive('chat-rive', 'assets/riv/success_check.riv');
   loadRive('chat-avatar-rive', 'assets/riv/marty.riv');
+  loadRive('ofertas-rive-1', 'assets/riv/buy-button-sparkle.riv');
+  loadRive('ofertas-rive-2', 'assets/riv/glowing-hover-button.riv');
+  loadRive('ofertas-rive-3', 'assets/riv/animated-button.riv');
+}
+
+function showSection(id) {
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  const link = document.querySelector(`.nav-link[href="#${id}"]`);
+  if (link) link.classList.add('active');
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // --- PRODUCTS ---

@@ -17,10 +17,10 @@
         <span class="logo-text">Shop<span class="accent">Rive</span></span>
       </div>
       <nav class="nav">
-        <a href="#" class="nav-link active">Inicio</a>
-        <a href="#" class="nav-link">Productos</a>
-        <a href="#" class="nav-link">Ofertas</a>
-        <a href="#" class="nav-link">Contacto</a>
+        <a href="#inicio" class="nav-link active" onclick="showSection('inicio')">Inicio</a>
+        <a href="#productos" class="nav-link" onclick="showSection('productos')">Productos</a>
+        <a href="#ofertas" class="nav-link" onclick="showSection('ofertas')">Ofertas</a>
+        <a href="#contacto" class="nav-link" onclick="showSection('contacto')">Contacto</a>
       </nav>
       <div class="header-actions" id="header-actions">
         <span id="auth-placeholder">
@@ -39,7 +39,7 @@
   </header>
 
   <!-- HERO CAROUSEL -->
-  <section class="hero">
+  <section class="hero" id="inicio">
     <div class="hero-slides" id="hero-slides">
       <div class="hero-slide active" data-index="0">
         <div class="hero-content">
@@ -107,10 +107,49 @@
     </div>
   </section>
 
-  <!-- PRODUCTS -->
-  <section class="products">
-    <h2 class="section-title">Productos Destacados</h2>
+  <!-- PRODUCTS GALLERY -->
+  <section class="products" id="productos">
+    <h2 class="section-title">Galería de Productos</h2>
+    <p class="section-subtitle">Hacé clic para agregar al carrito directamente</p>
     <div class="products-grid" id="products-grid"></div>
+  </section>
+
+  <!-- OFERTAS -->
+  <section class="ofertas" id="ofertas">
+    <h2 class="section-title">Ofertas Especiales</h2>
+    <div class="ofertas-grid">
+      <div class="oferta-card">
+        <canvas id="ofertas-rive-1" width="120" height="120" style="width:120px;height:120px;"></canvas>
+        <h3>30% OFF en Electrónica</h3>
+        <p>Auriculares, relojes y tablets con descuento</p>
+        <button class="btn-primary" onclick="showSection('productos')">Ver Ofertas</button>
+      </div>
+      <div class="oferta-card">
+        <canvas id="ofertas-rive-2" width="120" height="120" style="width:120px;height:120px;"></canvas>
+        <h3>2x1 en Moda</h3>
+        <p>Zapatillas, bolsos y billeteras</p>
+        <button class="btn-primary" onclick="showSection('productos')">Ver Ofertas</button>
+      </div>
+      <div class="oferta-card">
+        <canvas id="ofertas-rive-3" width="120" height="120" style="width:120px;height:120px;"></canvas>
+        <h3>Envío Gratis</h3>
+        <p>En compras mayores a $50.000</p>
+        <button class="btn-primary" onclick="showSection('productos')">Comprar Ahora</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACTO -->
+  <section class="contacto" id="contacto">
+    <h2 class="section-title">Contacto</h2>
+    <div class="contacto-content">
+      <div class="contacto-info">
+        <p>📧 soporte@shoprive.com</p>
+        <p>📱 +54 11 5555-1234</p>
+        <p>🕐 Lun a Vie 9:00 - 18:00</p>
+        <p>📍 Buenos Aires, Argentina</p>
+      </div>
+    </div>
   </section>
 
   <!-- CART SIDEBAR -->

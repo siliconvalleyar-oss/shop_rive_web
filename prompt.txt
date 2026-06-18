@@ -8,4 +8,6 @@ al presionar agregar al carrito no se agrega nada
 agregar un archivo todo.md y completarlo para escalar proyecto
 
 
+pushear y sumar cada tag de a un version sumar 0.0.1
+
 
