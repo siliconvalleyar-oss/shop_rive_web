@@ -4,14 +4,16 @@
 
 // --- PRODUCT DATA (fallback sin DB) ---
 const products = [
-  { id: 1, name: 'Auriculares Pro', category: 'electronica', price: 45000, riv: 'off_road_car_0_6', color: '#6c5ce7' },
-  { id: 2, name: 'Reloj Inteligente', category: 'electronica', price: 65000, riv: 'car', color: '#fd79a8' },
-  { id: 3, name: 'Mochila Urbana', category: 'moda', price: 28000, riv: 'vehicles', color: '#00b894' },
-  { id: 4, name: 'Zapatillas Sport', category: 'deportes', price: 52000, riv: 'off_road_car_0_6', color: '#fdcb6e' },
-  { id: 5, name: 'Lámpara LED', category: 'hogar', price: 18000, riv: 'car', color: '#e17055' },
-  { id: 6, name: 'Campera Premium', category: 'moda', price: 78000, riv: 'vehicles', color: '#00cec9' },
-  { id: 7, name: 'Tablet 10"', category: 'electronica', price: 120000, riv: 'off_road_car_0_6', color: '#a29bfe' },
-  { id: 8, name: 'Set de Pesas', category: 'deportes', price: 35000, riv: 'car', color: '#fab1a0' },
+  { id: 1, name: 'Auriculares Pro', category: 'electronica', price: 45000, riv: 'hero-ui-animation', color: '#6c5ce7' },
+  { id: 2, name: 'Reloj Inteligente', category: 'electronica', price: 65000, riv: 'rotating-can', color: '#fd79a8' },
+  { id: 3, name: 'Zapatillas Urbanas', category: 'moda', price: 52000, riv: 'shoe-showcase', color: '#00b894' },
+  { id: 4, name: 'Bolso de Mano', category: 'moda', price: 38000, riv: 'purse-360', color: '#fdcb6e' },
+  { id: 5, name: 'Lámpara LED', category: 'hogar', price: 18000, riv: 'off_road_car_0_6', color: '#e17055' },
+  { id: 6, name: 'Campera Premium', category: 'moda', price: 78000, riv: 'shoe-showcase', color: '#00cec9' },
+  { id: 7, name: 'Tablet 10"', category: 'electronica', price: 120000, riv: 'rotating-can', color: '#a29bfe' },
+  { id: 8, name: 'Set de Pesas', category: 'deportes', price: 35000, riv: 'off_road_car_0_6', color: '#fab1a0' },
+  { id: 9, name: 'Billetera Elegante', category: 'moda', price: 22000, riv: 'purse-360', color: '#6c5ce7' },
+  { id: 10, name: 'Parlante Portátil', category: 'electronica', price: 32000, riv: 'hero-ui-animation', color: '#fd79a8' },
 ];
 
 let cart = [];
@@ -49,15 +51,16 @@ function loadRive(canvasId, src, opts = {}) {
 
 function initRiveAnimations() {
   loadRive('logo-rive', 'assets/riv/car.riv');
-  ['car.riv', 'vehicles.riv', 'off_road_car_0_6.riv'].forEach((f, i) => {
+  ['hero-ui-animation.riv', 'shoe-showcase.riv', 'purse-360.riv'].forEach((f, i) => {
     loadRive('hero-rive-' + i, 'assets/riv/' + f);
   });
   ['cat-electronica', 'cat-moda', 'cat-hogar', 'cat-deportes'].forEach((id, i) => {
-    loadRive(id, ['assets/riv/off_road_car_0_6.riv', 'assets/riv/car.riv', 'assets/riv/vehicles.riv', 'assets/riv/off_road_car_0_6.riv'][i]);
+    loadRive(id, ['assets/riv/hero-ui-animation.riv', 'assets/riv/shoe-showcase.riv', 'assets/riv/rotating-can.riv', 'assets/riv/off_road_car_0_6.riv'][i]);
   });
   loadRive('empty-cart-rive', 'assets/riv/marty.riv');
   loadRive('toast-rive', 'assets/riv/success_check.riv');
-  loadRive('checkout-rive', 'assets/riv/success_check.riv');
+  loadRive('checkout-rive', 'assets/riv/buy-button-sparkle.riv');
+  loadRive('btn-cta-rive', 'assets/riv/glowing-hover-button.riv');
   loadRive('chat-rive', 'assets/riv/success_check.riv');
   loadRive('chat-avatar-rive', 'assets/riv/marty.riv');
 }

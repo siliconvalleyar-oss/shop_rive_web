@@ -1,6 +1,6 @@
 # ShopRive 🛒
 
-E-commerce con animaciones Rive, carrito de compras, chatbot autónomo y panel administrador.
+E-commerce con animaciones Rive interactivas (botones animados, showcases 3D de productos), carrito de compras, chatbot autónomo y panel administrador.
 
 ## Stack
 

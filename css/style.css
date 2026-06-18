@@ -288,6 +288,12 @@ body {
   box-shadow: 0 8px 30px rgba(108, 92, 231, 0.4);
 }
 
+.btn-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .hero-rive-canvas {
   width: 500px;
   height: 350px;
