@@ -1,0 +1,63 @@
+<?php session_start(); ?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrarse - ShopRive</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .auth-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; background: var(--bg); }
+    .auth-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 48px; width: 100%; max-width: 420px; animation: fadeInUp 0.5s ease; }
+    .auth-card h1 { font-size: 1.8rem; margin-bottom: 8px; }
+    .auth-card p { color: var(--text-muted); margin-bottom: 32px; }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; color: var(--text-muted); }
+    .form-group input { width: 100%; padding: 14px 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 1rem; transition: border-color 0.3s; outline: none; }
+    .form-group input:focus { border-color: var(--primary); }
+    .auth-error { background: rgba(253, 121, 168, 0.1); border: 1px solid var(--accent); color: var(--accent); padding: 12px; border-radius: 12px; margin-bottom: 20px; display: none; }
+    .auth-link { text-align: center; margin-top: 24px; color: var(--text-muted); }
+    .auth-link a { color: var(--primary); text-decoration: none; font-weight: 600; }
+  </style>
+</head>
+<body class="auth-page">
+  <div class="auth-card">
+    <h1>Crear Cuenta</h1>
+    <p>Registrate en ShopRive</p>
+    <div class="auth-error" id="auth-error"></div>
+    <form id="register-form">
+      <div class="form-group">
+        <label>Nombre</label>
+        <input type="text" id="nombre" placeholder="Tu nombre" required>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email" placeholder="tu@email.com" required>
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%">Crear Cuenta</button>
+    </form>
+    <div class="auth-link">
+      ¿Ya tenés cuenta? <a href="login.php">Iniciá sesión</a><br>
+      <a href="../index.php" style="color:var(--text-muted);font-size:0.85rem;">← Volver a la tienda</a>
+    </div>
+  </div>
+  <script>
+    document.getElementById('register-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const err = document.getElementById('auth-error');
+      const res = await fetch('../api/auth.php?action=register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre: document.getElementById('nombre').value, email: document.getElementById('email').value, password: document.getElementById('password').value })
+      });
+      const data = await res.json();
+      if (data.success) { window.location.href = '../index.php'; }
+      else { err.textContent = data.error; err.style.display = 'block'; }
+    };
+  </script>
+</body>
+</html>

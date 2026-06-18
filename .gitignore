@@ -1,0 +1,24 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# PHP
+vendor/
+composer.lock
+.env
+
+# Cache
+*.log
+tmp/
+cache/
+
+# Runtime
+serve.py
+__pycache__/
+*.pyc
