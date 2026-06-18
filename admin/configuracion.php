@@ -12,6 +12,10 @@ if (file_exists($configFile)) {
 }
 
 $defaults = [
+    'brand_name' => 'ShopRive',
+    'brand_logo' => '',
+    'brand_icon' => '',
+    'brand_bg' => '',
     'envio_domicilio' => '1',
     'envio_retiro' => '1',
     'chatbot_activo' => '1',
@@ -44,7 +48,25 @@ foreach ($defaults as $k => $v) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($defaults as $k => $v) {
+        if ($k === 'brand_logo' || $k === 'brand_icon') continue;
         $config[$k] = $_POST[$k] ?? '0';
+    }
+    // Handle file uploads
+    $uploadDir = __DIR__ . '/../assets/uploads/';
+    if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+    foreach (['brand_logo' => 'logo', 'brand_icon' => 'icon', 'brand_bg' => 'bg'] as $field => $prefix) {
+        if (!empty($_FILES[$field]['name']) && $_FILES[$field]['error'] === UPLOAD_ERR_OK) {
+            $ext = strtolower(pathinfo($_FILES[$field]['name'], PATHINFO_EXTENSION));
+            if (in_array($ext, ['png', 'jpg', 'jpeg', 'svg', 'ico'])) {
+                $name = $prefix . '-' . time() . '.' . $ext;
+                move_uploaded_file($_FILES[$field]['tmp_name'], $uploadDir . $name);
+                $config[$field] = $name;
+            }
+        } elseif (isset($_POST[$field . '_keep'])) {
+            // keep existing value
+        } else {
+            $config[$field] = $_POST[$field] ?? $config[$field] ?? '';
+        }
     }
     file_put_contents($configFile, json_encode($config, JSON_PRETTY_PRINT));
     $mensaje = 'Configuración guardada.';
@@ -108,7 +130,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       <?php if (isset($mensaje)): ?><div class="alert"><?= $mensaje ?></div><?php endif; ?>
 
-      <form method="POST">
+      <form method="POST" enctype="multipart/form-data">
+        <div class="config-section">
+          <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Marca</h2>
+          <div class="form-group">
+            <label>Nombre de la empresa / tienda</label>
+            <input type="text" name="brand_name" value="<?= htmlspecialchars($config['brand_name']) ?>">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Logo (PNG, JPG, SVG)</label>
+              <input type="hidden" name="brand_logo_keep" value="1">
+              <input type="file" name="brand_logo" accept=".png,.jpg,.jpeg,.svg" style="color:var(--text);font-size:0.9rem;">
+              <?php if (!empty($config['brand_logo'])): ?>
+                <div style="margin-top:8px;display:flex;align-items:center;gap:12px;">
+                  <img src="../assets/uploads/<?= htmlspecialchars($config['brand_logo']) ?>" style="max-width:80px;max-height:40px;border-radius:8px;">
+                  <span style="font-size:0.8rem;color:var(--text-muted);"><?= $config['brand_logo'] ?></span>
+                </div>
+              <?php endif; ?>
+            </div>
+            <div class="form-group">
+              <label>Icono / Favicon (PNG, ICO)</label>
+              <input type="hidden" name="brand_icon_keep" value="1">
+              <input type="file" name="brand_icon" accept=".png,.ico" style="color:var(--text);font-size:0.9rem;">
+              <?php if (!empty($config['brand_icon'])): ?>
+                <div style="margin-top:8px;display:flex;align-items:center;gap:12px;">
+                  <img src="../assets/uploads/<?= htmlspecialchars($config['brand_icon']) ?>" style="max-width:32px;max-height:32px;border-radius:4px;">
+                  <span style="font-size:0.8rem;color:var(--text-muted);"><?= $config['brand_icon'] ?></span>
+                </div>
+              <?php endif; ?>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Imagen de fondo decorativa (PNG, JPG) — opcional</label>
+            <input type="hidden" name="brand_bg_keep" value="1">
+            <input type="file" name="brand_bg" accept=".png,.jpg,.jpeg" style="color:var(--text);font-size:0.9rem;">
+            <?php if (!empty($config['brand_bg'])): ?>
+              <div style="margin-top:8px;display:flex;align-items:center;gap:12px;">
+                <img src="../assets/uploads/<?= htmlspecialchars($config['brand_bg']) ?>" style="max-width:120px;max-height:60px;border-radius:8px;object-fit:cover;">
+                <span style="font-size:0.8rem;color:var(--text-muted);"><?= $config['brand_bg'] ?></span>
+              </div>
+            <?php endif; ?>
+          </div>
+        </div>
+
         <div class="config-section">
           <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Formas de Envío</h2>
           <div class="toggle-wrap">
