@@ -27,8 +27,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'add') {
         $uploaded = handleFileUpload('archivo_imagen', $uploadDir);
         $archivo = $uploaded ?: ($_POST['riv_file'] ?: 'car');
-        $stmt = $pdo->prepare("INSERT INTO productos (nombre, categoria, precio, stock, riv_file, color) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$_POST['nombre'], $_POST['categoria'], $_POST['precio'], $_POST['stock'] ?: 0, $archivo, $_POST['color']]);
+        $soloRetiro = isset($_POST['solo_retiro']) ? 1 : 0;
+        $stmt = $pdo->prepare("INSERT INTO productos (nombre, categoria, precio, stock, riv_file, color, solo_retiro) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$_POST['nombre'], $_POST['categoria'], $_POST['precio'], $_POST['stock'] ?: 0, $archivo, $_POST['color'], $soloRetiro]);
     } elseif ($action === 'edit' && isset($_POST['id'])) {
         if ($_FILES['archivo_imagen']['error'] === UPLOAD_ERR_OK) {
             $uploaded = handleFileUpload('archivo_imagen', $uploadDir);
@@ -36,8 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $archivo = $_POST['riv_file'] ?: 'car';
         }
-        $stmt = $pdo->prepare("UPDATE productos SET nombre=?, categoria=?, precio=?, stock=?, riv_file=?, color=? WHERE id=?");
-        $stmt->execute([$_POST['nombre'], $_POST['categoria'], $_POST['precio'], $_POST['stock'] ?: 0, $archivo, $_POST['color'], $_POST['id']]);
+        $soloRetiro = isset($_POST['solo_retiro']) ? 1 : 0;
+        $stmt = $pdo->prepare("UPDATE productos SET nombre=?, categoria=?, precio=?, stock=?, riv_file=?, color=?, solo_retiro=? WHERE id=?");
+        $stmt->execute([$_POST['nombre'], $_POST['categoria'], $_POST['precio'], $_POST['stock'] ?: 0, $archivo, $_POST['color'], $soloRetiro, $_POST['id']]);
     } elseif ($action === 'delete' && isset($_POST['id'])) {
         $pdo->prepare("DELETE FROM productos WHERE id = ?")->execute([$_POST['id']]);
     }
@@ -115,7 +117,7 @@ $productos = $pdo->query("SELECT * FROM productos ORDER BY id")->fetchAll();
       </div>
       <table>
         <tr>
-          <th>Archivo</th><th>ID</th><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Acción</th>
+          <th>Archivo</th><th>ID</th><th>Nombre</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Retiro</th><th>Acción</th>
         </tr>
         <?php foreach ($productos as $p):
           $archivo = $p['riv_file'] ?? '';
@@ -139,6 +141,7 @@ $productos = $pdo->query("SELECT * FROM productos ORDER BY id")->fetchAll();
           <td><?= $p['categoria'] ?></td>
           <td>$<?= number_format($p['precio'], 0, ',', '.') ?></td>
           <td class="<?= ($p['stock'] ?? 0) <= 5 ? 'stock-low' : 'stock-ok' ?>"><?= (int)($p['stock'] ?? 0) ?></td>
+          <td><?= !empty($p['solo_retiro']) ? '🏪 Sí' : '—' ?></td>
           <td>
             <div class="actions">
               <button class="btn-sm btn-edit" onclick="editProduct(<?= htmlspecialchars(json_encode($p)) ?>)">Editar</button>
@@ -201,6 +204,13 @@ $productos = $pdo->query("SELECT * FROM productos ORDER BY id")->fetchAll();
           <label>Color</label>
           <input type="color" name="color" id="edit-color">
         </div>
+        <div class="form-group" style="display:flex;align-items:center;gap:12px;padding:12px 0;">
+          <label style="margin:0;cursor:pointer;display:flex;align-items:center;gap:10px;">
+            <input type="checkbox" name="solo_retiro" id="edit-solo-retiro" value="1" style="width:20px;height:20px;accent-color:var(--primary);cursor:pointer;">
+            <span style="font-weight:600;font-size:0.95rem;">Solo retiro en local</span>
+          </label>
+          <span style="font-size:0.8rem;color:var(--text-muted);">El cliente debe retirar en el local (no se puede enviar)</span>
+        </div>
         <div style="display:flex;gap:12px;margin-top:20px;">
           <button class="btn-primary" type="submit">Guardar Cambios</button>
           <button class="btn-primary" type="button" onclick="document.getElementById('edit-overlay').classList.remove('open')" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);">Cancelar</button>
@@ -252,6 +262,13 @@ $productos = $pdo->query("SELECT * FROM productos ORDER BY id")->fetchAll();
           <label>Color</label>
           <input type="color" name="color" value="#6c5ce7">
         </div>
+        <div class="form-group" style="display:flex;align-items:center;gap:12px;padding:12px 0;">
+          <label style="margin:0;cursor:pointer;display:flex;align-items:center;gap:10px;">
+            <input type="checkbox" name="solo_retiro" value="1" style="width:20px;height:20px;accent-color:var(--primary);cursor:pointer;">
+            <span style="font-weight:600;font-size:0.95rem;">Solo retiro en local</span>
+          </label>
+          <span style="font-size:0.8rem;color:var(--text-muted);">El cliente debe retirar en el local (no se puede enviar)</span>
+        </div>
         <div style="display:flex;gap:12px;margin-top:20px;">
           <button class="btn-primary" type="submit">Agregar</button>
           <button class="btn-primary" type="button" onclick="document.getElementById('add-overlay').classList.remove('open')" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);">Cancelar</button>
@@ -269,6 +286,7 @@ $productos = $pdo->query("SELECT * FROM productos ORDER BY id")->fetchAll();
       document.getElementById('edit-stock').value = p.stock || 0;
       document.getElementById('edit-riv').value = p.riv_file || '';
       document.getElementById('edit-color').value = p.color || '#6c5ce7';
+      document.getElementById('edit-solo-retiro').checked = p.solo_retiro == 1;
       // Preview
       const preview = document.getElementById('edit-preview');
       const f = p.riv_file || '';

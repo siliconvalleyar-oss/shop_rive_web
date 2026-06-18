@@ -6,7 +6,8 @@
         "precio": 45000,
         "riv_file": "hero-ui-animation",
         "color": "#6c5ce7",
-        "stock": 25
+        "stock": 25,
+        "solo_retiro": 0
     },
     {
         "id": 2,
@@ -15,7 +16,8 @@
         "precio": 65000,
         "riv_file": "rotating-can",
         "color": "#fd79a8",
-        "stock": 15
+        "stock": 15,
+        "solo_retiro": 0
     },
     {
         "id": 3,
@@ -24,7 +26,8 @@
         "precio": 52000,
         "riv_file": "shoe-showcase",
         "color": "#00b894",
-        "stock": 30
+        "stock": 30,
+        "solo_retiro": 0
     },
     {
         "id": 4,
@@ -33,16 +36,18 @@
         "precio": 38000,
         "riv_file": "purse-360",
         "color": "#fdcb6e",
-        "stock": 20
+        "stock": 20,
+        "solo_retiro": 0
     },
     {
         "id": 5,
-        "nombre": "L\u00e1mpara LED",
+        "nombre": "Lámpara LED",
         "categoria": "hogar",
         "precio": 18000,
         "riv_file": "off_road_car_0_6",
         "color": "#e17055",
-        "stock": 50
+        "stock": 50,
+        "solo_retiro": 0
     },
     {
         "id": 6,
@@ -51,7 +56,8 @@
         "precio": 78000,
         "riv_file": "shoe-showcase",
         "color": "#00cec9",
-        "stock": 12
+        "stock": 12,
+        "solo_retiro": 0
     },
     {
         "id": 7,
@@ -60,7 +66,8 @@
         "precio": 120000,
         "riv_file": "rotating-can",
         "color": "#a29bfe",
-        "stock": 8
+        "stock": 8,
+        "solo_retiro": 0
     },
     {
         "id": 8,
@@ -69,7 +76,8 @@
         "precio": 35000,
         "riv_file": "off_road_car_0_6",
         "color": "#fab1a0",
-        "stock": 18
+        "stock": 18,
+        "solo_retiro": 0
     },
     {
         "id": 9,
@@ -78,16 +86,18 @@
         "precio": 22000,
         "riv_file": "purse-360",
         "color": "#6c5ce7",
-        "stock": 35
+        "stock": 35,
+        "solo_retiro": 0
     },
     {
         "id": 10,
-        "nombre": "Parlante Port\u00e1til",
+        "nombre": "Parlante Portátil",
         "categoria": "electronica",
         "precio": 32000,
         "riv_file": "hero-ui-animation",
         "color": "#fd79a8",
-        "stock": 22
+        "stock": 22,
+        "solo_retiro": 0
     },
     {
         "nombre": "Papa",
@@ -96,6 +106,7 @@
         "stock": "8",
         "riv_file": "papa.riv",
         "color": "#6c5ce7",
-        "id": 11
+        "id": 11,
+        "solo_retiro": 0
     }
 ]

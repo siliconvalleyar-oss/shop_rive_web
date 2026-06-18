@@ -274,6 +274,9 @@
               </select>
             </div>
           </div>
+          <div id="solo-retiro-notice" style="display:none;background:rgba(253,121,168,0.12);border:1px solid var(--accent);border-radius:12px;padding:12px 16px;margin-bottom:12px;font-size:0.9rem;color:var(--accent);font-weight:600;">
+            Este producto solo está disponible para retiro en local
+          </div>
           <div class="payment-row">
             <div class="payment-field" style="grid-column:1/-1;">
               <label>Forma de envío</label>

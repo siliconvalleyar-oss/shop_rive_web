@@ -5,16 +5,16 @@
 // --- PRODUCT DATA (cargados desde API con fallback offline) ---
 let products = [];
 const defaultProducts = [
-  { id: 1, name: 'Auriculares Pro', category: 'electronica', price: 45000, riv: 'hero-ui-animation', color: '#6c5ce7', stock: 25 },
-  { id: 2, name: 'Reloj Inteligente', category: 'electronica', price: 65000, riv: 'rotating-can', color: '#fd79a8', stock: 15 },
-  { id: 3, name: 'Zapatillas Urbanas', category: 'moda', price: 52000, riv: 'shoe-showcase', color: '#00b894', stock: 30 },
-  { id: 4, name: 'Bolso de Mano', category: 'moda', price: 38000, riv: 'purse-360', color: '#fdcb6e', stock: 20 },
-  { id: 5, name: 'Lámpara LED', category: 'hogar', price: 18000, riv: 'off_road_car_0_6', color: '#e17055', stock: 50 },
-  { id: 6, name: 'Campera Premium', category: 'moda', price: 78000, riv: 'shoe-showcase', color: '#00cec9', stock: 12 },
-  { id: 7, name: 'Tablet 10"', category: 'electronica', price: 120000, riv: 'rotating-can', color: '#a29bfe', stock: 8 },
-  { id: 8, name: 'Set de Pesas', category: 'deportes', price: 35000, riv: 'off_road_car_0_6', color: '#fab1a0', stock: 18 },
-  { id: 9, name: 'Billetera Elegante', category: 'moda', price: 22000, riv: 'purse-360', color: '#6c5ce7', stock: 35 },
-  { id: 10, name: 'Parlante Portátil', category: 'electronica', price: 32000, riv: 'hero-ui-animation', color: '#fd79a8', stock: 22 },
+  { id: 1, name: 'Auriculares Pro', category: 'electronica', price: 45000, riv: 'hero-ui-animation', color: '#6c5ce7', stock: 25, solo_retiro: false },
+  { id: 2, name: 'Reloj Inteligente', category: 'electronica', price: 65000, riv: 'rotating-can', color: '#fd79a8', stock: 15, solo_retiro: false },
+  { id: 3, name: 'Zapatillas Urbanas', category: 'moda', price: 52000, riv: 'shoe-showcase', color: '#00b894', stock: 30, solo_retiro: false },
+  { id: 4, name: 'Bolso de Mano', category: 'moda', price: 38000, riv: 'purse-360', color: '#fdcb6e', stock: 20, solo_retiro: false },
+  { id: 5, name: 'Lámpara LED', category: 'hogar', price: 18000, riv: 'off_road_car_0_6', color: '#e17055', stock: 50, solo_retiro: false },
+  { id: 6, name: 'Campera Premium', category: 'moda', price: 78000, riv: 'shoe-showcase', color: '#00cec9', stock: 12, solo_retiro: false },
+  { id: 7, name: 'Tablet 10"', category: 'electronica', price: 120000, riv: 'rotating-can', color: '#a29bfe', stock: 8, solo_retiro: false },
+  { id: 8, name: 'Set de Pesas', category: 'deportes', price: 35000, riv: 'off_road_car_0_6', color: '#fab1a0', stock: 18, solo_retiro: false },
+  { id: 9, name: 'Billetera Elegante', category: 'moda', price: 22000, riv: 'purse-360', color: '#6c5ce7', stock: 35, solo_retiro: false },
+  { id: 10, name: 'Parlante Portátil', category: 'electronica', price: 32000, riv: 'hero-ui-animation', color: '#fd79a8', stock: 22, solo_retiro: false },
 ];
 
 let cart = [];
@@ -96,7 +96,8 @@ async function loadProductsFromAPI() {
         price: parseFloat(p.precio),
         riv: p.riv_file || 'car',
         color: p.color || '#6c5ce7',
-        stock: parseInt(p.stock) || 0
+        stock: parseInt(p.stock) || 0,
+        solo_retiro: p.solo_retiro == 1
       }));
       return;
     }
@@ -123,7 +124,7 @@ function renderProducts(filter) {
       </div>
       <div class="product-info">
         <div class="product-category">${p.category}</div>
-        <div class="product-name">${p.name}</div>
+        <div class="product-name">${p.name}${p.solo_retiro ? '<span style="font-size:0.65rem;background:var(--accent);color:#fff;padding:2px 8px;border-radius:20px;margin-left:6px;vertical-align:middle;">Local</span>' : ''}</div>
         <div class="product-price">${formatPrice(p.price)}</div>
         <div style="font-size:0.8rem;color:${p.stock > 5 ? 'var(--success)' : p.stock > 0 ? 'var(--accent)' : 'var(--text-muted)'};margin-bottom:12px;">
           ${p.stock > 0 ? 'Stock: ' + p.stock : 'Sin stock'}
@@ -310,10 +311,19 @@ function obtenerUbicacion() {
 
 function toggleEnvio() {
   const wrap = document.getElementById('envio-direccion-wrap');
-  if (document.getElementById('pay-envio').value === 'retiro') {
+  const envioSelect = document.getElementById('pay-envio');
+  const soloRetiro = cart.some(item => item.solo_retiro);
+  if (soloRetiro) {
+    envioSelect.value = 'retiro';
+    envioSelect.disabled = true;
     wrap.style.display = 'none';
   } else {
-    wrap.style.display = 'block';
+    envioSelect.disabled = false;
+    if (envioSelect.value === 'retiro') {
+      wrap.style.display = 'none';
+    } else {
+      wrap.style.display = 'block';
+    }
   }
 }
 
@@ -329,6 +339,8 @@ function checkout() {
     document.getElementById('payment-form-wrap').style.display = 'block';
     document.getElementById('payment-success').style.display = 'none';
     buildPaymentResumen();
+    updateEnvioNotice();
+    toggleEnvio();
     fetch('api/auth.php?action=session').then(r => r.json()).then(d => {
       if (d.success && d.user) {
         document.getElementById('pay-nombre').value = d.user.nombre || '';
@@ -369,6 +381,20 @@ function openPaymentForm() {
   document.getElementById('payment-form-wrap').style.display = 'block';
   document.getElementById('payment-success').style.display = 'none';
   buildPaymentResumen();
+  updateEnvioNotice();
+  toggleEnvio();
+}
+
+function updateEnvioNotice() {
+  const notice = document.getElementById('solo-retiro-notice');
+  const soloRetiro = cart.some(item => item.solo_retiro);
+  if (soloRetiro) {
+    const names = cart.filter(i => i.solo_retiro).map(i => i.name).join(', ');
+    notice.textContent = '📦 Estos productos son solo para retiro en local: ' + names;
+    notice.style.display = 'block';
+  } else {
+    notice.style.display = 'none';
+  }
 }
 
 function closePayment() {
@@ -586,7 +612,7 @@ function renderOfertas() {
       <div class="oferta-rive-wrap" style="background:${p.color};">
         ${mediaHtml}
       </div>
-      <h3>${p.name}</h3>
+      <h3>${p.name}${p.solo_retiro ? '<span style="font-size:0.6rem;background:var(--accent);color:#fff;padding:1px 6px;border-radius:20px;margin-left:4px;vertical-align:middle;">Local</span>' : ''}</h3>
       <div class="oferta-prices">
         <span class="oferta-original">${formatPrice(p.price)}</span>
         <span class="oferta-discounted">${formatPrice(discountedPrice)}</span>

@@ -46,6 +46,19 @@ if ($action === 'create') {
     exit;
   }
 
+  // Verificar si algún producto es solo retiro
+  $ids = array_map(fn($i) => intval($i['id']), $items);
+  if (!empty($ids)) {
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+    $stmtCheck = $pdo->prepare("SELECT COUNT(*) as c FROM productos WHERE id IN ($placeholders) AND solo_retiro = 1");
+    $stmtCheck->execute($ids);
+    $row = $stmtCheck->fetch();
+    $hasSoloRetiro = (int)($row['c'] ?? 0) > 0;
+    if ($hasSoloRetiro) {
+      $tipo_envio = 'retiro';
+    }
+  }
+
   $total = 0;
   foreach ($items as $item) {
     $total += floatval($item['price']) * intval($item['qty']);
