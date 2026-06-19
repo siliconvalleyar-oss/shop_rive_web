@@ -1,4 +1,9 @@
-<?php session_start(); ?>
+<?php
+require_once __DIR__ . '/lib/SessionManager.php';
+require_once __DIR__ . '/lib/Logger.php';
+Logger::init();
+SessionManager::init();
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>

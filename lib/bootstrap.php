@@ -3,12 +3,7 @@
  * API Bootstrap - Shared initialization for all API endpoints
  */
 
-// Session
-if (session_status() === PHP_SESSION_NONE) {
-  session_start();
-}
-
-// CORS headers
+// CORS headers (must be before session for OPTIONS preflight)
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, X-CSRF-Token');
@@ -19,9 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
   exit;
 }
 
-// Load database
-require_once __DIR__ . '/../config/database.php';
-
 // Load infrastructure
 require_once __DIR__ . '/Response.php';
 require_once __DIR__ . '/Logger.php';
@@ -30,17 +22,26 @@ require_once __DIR__ . '/CSRF.php';
 require_once __DIR__ . '/RateLimiter.php';
 require_once __DIR__ . '/Validator.php';
 require_once __DIR__ . '/Router.php';
+require_once __DIR__ . '/SessionManager.php';
+require_once __DIR__ . '/Mailer.php';
 
-// Initialize services
+// Initialize services (order matters)
 Logger::init();
 ErrorHandler::register();
+
+// Session — uses configured driver (auto/file/redis/memcached)
+SessionManager::init();
+
 RateLimiter::init();
 CSRF::init();
+
+// Load database
+require_once __DIR__ . '/../config/database.php';
 
 // Content type
 header('Content-Type: application/json');
 
-// Rate limiting (skip for OPTIONS)
+// Rate limiting
 RateLimiter::middleware();
 
 // DB check

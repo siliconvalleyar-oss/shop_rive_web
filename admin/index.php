@@ -1,4 +1,8 @@
 <?php
+require_once __DIR__ . '/../lib/SessionManager.php';
+require_once __DIR__ . '/../lib/Logger.php';
+Logger::init();
+SessionManager::init();
 session_start();
 if (!isset($_SESSION['user_id']) || $_SESSION['user_rol'] !== 'admin') {
     header('Location: ../auth/login.php');

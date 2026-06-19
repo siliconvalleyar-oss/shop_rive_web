@@ -53,6 +53,11 @@ function itemsTable($items) {
 }
 
 function sendEmail($to, $subject, $body) {
+    // Use Mailer if available, fallback to mail()
+    if (class_exists('Mailer')) {
+        Mailer::quickSend($to, $subject, $body);
+        return;
+    }
     $headers = "MIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\nFrom: ShopRive <noreply@shoprive.com>\r\n";
     @mail($to, "=?UTF-8?B?" . base64_encode($subject) . "?=", $body, $headers);
 }
@@ -194,6 +199,37 @@ function emailPresupuesto($cliente, $items, $presupuestoId, $validez = '7 días'
  * Send email based on type
  */
 function enviarEmailTipo($tipo, $to, $pedido, $items, $extra = []) {
+    // 1. Intentar obtener la plantilla formateada desde n8n
+    $n8nUrl = 'http://localhost:5679/webhook/shoprive-emails';
+    $postData = json_encode([
+        'tipo' => $tipo,
+        'to' => $to,
+        'pedido' => $pedido,
+        'items' => $items,
+        'extra' => $extra
+    ]);
+
+    $options = [
+        'http' => [
+            'header'  => "Content-Type: application/json\r\n",
+            'method'  => 'POST',
+            'content' => $postData,
+            'timeout' => 2 // 2 segundos máximo para no colgar la web si n8n no responde
+        ]
+    ];
+
+    $context = stream_context_create($options);
+    $response = @file_get_contents($n8nUrl, false, $context);
+
+    if ($response !== false) {
+        $resData = json_decode($response, true);
+        if (isset($resData['subject']) && isset($resData['body'])) {
+            sendEmail($to, $resData['subject'], $resData['body']);
+            return;
+        }
+    }
+
+    // 2. Fallback: Si n8n falla o está apagado, usar plantillas PHP locales
     $subject = '';
     $body = '';
 

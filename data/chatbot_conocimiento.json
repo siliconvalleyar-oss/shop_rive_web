@@ -148,5 +148,80 @@
         "id": 15,
         "patron": "default",
         "respuesta": "Disculpa, no entend\u00ed bien tu consulta. Pod\u00e9s preguntarme sobre:\\n- Productos y precios\\n- Env\u00edos\\n- Formas de pago\\n- Devoluciones\\n- Horarios de atenci\u00f3n\\nO escrib\u00ed \"hola\" para empezar."
+    },
+    {
+        "id": 1,
+        "patron": "hola|buenas|buenos dias|buenas tardes|que tal",
+        "respuesta": "\u00a1Hola! Bienvenido a ShopRive. \u00bfEn qu\u00e9 puedo ayudarte? Puedo informarte sobre productos, precios, env\u00edos y m\u00e1s."
+    },
+    {
+        "id": 2,
+        "patron": "productos|qu\u00e9 venden|catalogo|tienda",
+        "respuesta": "En ShopRive vendemos tecnolog\u00eda, moda, hogar y deportes. Tenemos auriculares, relojes, mochilas, zapatillas, l\u00e1mparas, camperas, tablets y pesas. \u00bfQu\u00e9 categor\u00eda te interesa?"
+    },
+    {
+        "id": 3,
+        "patron": "electronica|tecnolog\u00eda|auriculares|reloj|tablet",
+        "respuesta": "En electr\u00f3nica tenemos:\\n- Auriculares Pro: $45.000\\n- Reloj Inteligente: $65.000\\n- Tablet 10\": $120.000\\n\u00bfQuer\u00e9s m\u00e1s detalles de alguno?"
+    },
+    {
+        "id": 4,
+        "patron": "moda|ropa|mochila|campera",
+        "respuesta": "En moda tenemos:\\n- Mochila Urbana: $28.000\\n- Campera Premium: $78.000\\n\u00bfTe gustar\u00eda ver m\u00e1s opciones?"
+    },
+    {
+        "id": 5,
+        "patron": "hogar|casa|l\u00e1mpara|decoracion",
+        "respuesta": "En hogar tenemos L\u00e1mpara LED a $18.000. Ideal para iluminar cualquier ambiente. \u00bfTe interesa?"
+    },
+    {
+        "id": 6,
+        "patron": "deportes|pesas|ejercicio|gym",
+        "respuesta": "En deportes tenemos Set de Pesas por $35.000 y Zapatillas Sport por $52.000. \u00bfAlgo m\u00e1s que busques?"
+    },
+    {
+        "id": 7,
+        "patron": "precio|cuanto cuesta|cuanto vale|costo",
+        "respuesta": "Los precios var\u00edan seg\u00fan el producto. Tenemos desde $18.000 hasta $120.000. \u00bfQu\u00e9 producto te interesa? Te paso el precio exacto."
+    },
+    {
+        "id": 8,
+        "patron": "envio|env\u00edos|entrega|demora|cuanto tarda",
+        "respuesta": "Hacemos env\u00edos a todo el pa\u00eds. El tiempo estimado es de 3 a 7 d\u00edas h\u00e1biles. En compras mayores a $50.000 el env\u00edo es GRATIS."
+    },
+    {
+        "id": 9,
+        "patron": "pago|formas de pago|tarjeta|transferencia|efectivo",
+        "respuesta": "Aceptamos tarjetas de cr\u00e9dito\/d\u00e9bito, transferencia bancaria y efectivo. Pod\u00e9s pagar en hasta 12 cuotas sin inter\u00e9s."
+    },
+    {
+        "id": 10,
+        "patron": "horario|atenci\u00f3n|horarios|local",
+        "respuesta": "Nuestra atenci\u00f3n al cliente es de lunes a viernes de 9:00 a 18:00 hs. Los pedidos online se procesan las 24 hs."
+    },
+    {
+        "id": 11,
+        "patron": "devolucion|cambio|reembolso|garantia",
+        "respuesta": "Ten\u00e9s 30 d\u00edas para cambios o devoluciones. Todos nuestros productos tienen garant\u00eda por 6 meses."
+    },
+    {
+        "id": 12,
+        "patron": "gracias|muchas gracias|thanks",
+        "respuesta": "\u00a1De nada! Si necesit\u00e1s algo m\u00e1s, estoy aqu\u00ed para ayudarte. Que tengas un excelente d\u00eda \ud83d\ude80"
+    },
+    {
+        "id": 13,
+        "patron": "admin|administrador|panel",
+        "respuesta": "Si sos administrador, pod\u00e9s acceder al panel en \/admin\/. Necesit\u00e1s una cuenta con permisos de administrador."
+    },
+    {
+        "id": 14,
+        "patron": "chatbot|quien eres|que eres|bot",
+        "respuesta": "Soy el asistente virtual de ShopRive \ud83e\udd16 Estoy aqu\u00ed para ayudarte con productos, precios, env\u00edos y todo lo que necesites."
+    },
+    {
+        "id": 15,
+        "patron": "default",
+        "respuesta": "Disculpa, no entend\u00ed bien tu consulta. Pod\u00e9s preguntarme sobre:\\n- Productos y precios\\n- Env\u00edos\\n- Formas de pago\\n- Devoluciones\\n- Horarios de atenci\u00f3n\\nO escrib\u00ed \"hola\" para empezar."
     }
 ]

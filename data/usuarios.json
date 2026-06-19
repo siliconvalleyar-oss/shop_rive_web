@@ -46,5 +46,33 @@
         "email": "user@shoprive.com",
         "password": "$2y$10$vqZX.m.zGS.FVhC8chktFufbz0j40bVdzzwzAlu35s4SpQRu0JaOK",
         "rol": "usuario"
+    },
+    {
+        "nombre": "le",
+        "email": "le@le.com",
+        "password": "$2y$10$dlmoV29vppqiYYgWQj5Fw.AMU9WW4fonCiM4Dat3MJJCqOjpRHXaa",
+        "rol": "usuario",
+        "id": 6
+    },
+    {
+        "id": 1,
+        "nombre": "Admin",
+        "email": "admin@shoprive.com",
+        "password": "$2y$10$axD76TM15rRQjf7sKVaUyOH3eDLk7M8MiDsCSAG2N03yEcJ\/lMRBG",
+        "rol": "admin"
+    },
+    {
+        "id": 2,
+        "nombre": "Usuario Demo",
+        "email": "user@shoprive.com",
+        "password": "$2y$10$axD76TM15rRQjf7sKVaUyOH3eDLk7M8MiDsCSAG2N03yEcJ\/lMRBG",
+        "rol": "usuario"
+    },
+    {
+        "nombre": "Finalizar Compra",
+        "email": "a@a.com",
+        "password": "$2y$10$m62P90bwU6SwmY3Q6.Lm8eFf6.ARHbuCsf0SN4pbabVJ2DyN.ZrsW",
+        "rol": "usuario",
+        "id": 7
     }
 ]

@@ -2,9 +2,6 @@
 
 class CSRF {
   public static function init() {
-    if (session_status() === PHP_SESSION_NONE) {
-      session_start();
-    }
     if (empty($_SESSION['_csrf_token'])) {
       $_SESSION['_csrf_token'] = bin2hex(random_bytes(32));
       $_SESSION['_csrf_time'] = time();

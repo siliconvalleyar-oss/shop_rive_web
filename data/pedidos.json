@@ -1,1 +1,50 @@
-[]
+[
+    {
+        "usuario_id": null,
+        "nombre": "Mar\u00eda P\u00e9rez",
+        "email": "maria.perez@example.com",
+        "telefono": "987654321",
+        "direccion": "Av. Corrientes 1234",
+        "localidad": "CABA",
+        "entre_calles": "",
+        "coordenadas": "",
+        "comentarios_ubicacion": "",
+        "metodo_pago": "tarjeta",
+        "tipo_envio": "domicilio",
+        "total": 45000,
+        "estado": "pendiente",
+        "id": 1
+    },
+    {
+        "usuario_id": "7",
+        "nombre": "Finalizar Compra",
+        "email": "a@a.com",
+        "telefono": "12",
+        "direccion": "a",
+        "localidad": "a",
+        "entre_calles": "",
+        "coordenadas": "",
+        "comentarios_ubicacion": "",
+        "metodo_pago": "tarjeta",
+        "tipo_envio": "domicilio",
+        "total": 629000,
+        "estado": "pendiente",
+        "id": 2
+    },
+    {
+        "usuario_id": "7",
+        "nombre": "Finalizar Compra",
+        "email": "a@a.com",
+        "telefono": "12345678",
+        "direccion": "av",
+        "localidad": "vd",
+        "entre_calles": "",
+        "coordenadas": "",
+        "comentarios_ubicacion": "",
+        "metodo_pago": "tarjeta",
+        "tipo_envio": "domicilio",
+        "total": 629000,
+        "estado": "pendiente",
+        "id": 3
+    }
+]

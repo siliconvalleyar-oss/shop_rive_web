@@ -158,5 +158,245 @@
         "precio": 78000,
         "cantidad": 1,
         "id": 20
+    },
+    {
+        "pedido_id": "1",
+        "producto_id": 1,
+        "nombre": "Auriculares Pro",
+        "precio": 45000,
+        "cantidad": 1,
+        "id": 21
+    },
+    {
+        "pedido_id": "1",
+        "producto_id": 2,
+        "nombre": "Reloj Inteligente",
+        "precio": 65000,
+        "cantidad": 1,
+        "id": 22
+    },
+    {
+        "pedido_id": "1",
+        "producto_id": 7,
+        "nombre": "Tablet 10\"",
+        "precio": 120000,
+        "cantidad": 1,
+        "id": 23
+    },
+    {
+        "pedido_id": "1",
+        "producto_id": 10,
+        "nombre": "Parlante Port\u00e1til",
+        "precio": 32000,
+        "cantidad": 2,
+        "id": 24
+    },
+    {
+        "pedido_id": "2",
+        "producto_id": 1,
+        "nombre": "Auriculares Pro",
+        "precio": 45000,
+        "cantidad": 5,
+        "id": 25
+    },
+    {
+        "pedido_id": "2",
+        "producto_id": 2,
+        "nombre": "Reloj Inteligente",
+        "precio": 65000,
+        "cantidad": 2,
+        "id": 26
+    },
+    {
+        "pedido_id": "2",
+        "producto_id": 7,
+        "nombre": "Tablet 10\"",
+        "precio": 120000,
+        "cantidad": 1,
+        "id": 27
+    },
+    {
+        "pedido_id": "2",
+        "producto_id": 10,
+        "nombre": "Parlante Port\u00e1til",
+        "precio": 32000,
+        "cantidad": 2,
+        "id": 28
+    },
+    {
+        "pedido_id": "2",
+        "producto_id": 3,
+        "nombre": "Zapatillas Urbanas",
+        "precio": 52000,
+        "cantidad": 1,
+        "id": 29
+    },
+    {
+        "pedido_id": "2",
+        "producto_id": 4,
+        "nombre": "Bolso de Mano",
+        "precio": 38000,
+        "cantidad": 1,
+        "id": 30
+    },
+    {
+        "pedido_id": "3",
+        "producto_id": 1,
+        "nombre": "Auriculares Pro",
+        "precio": 45000,
+        "cantidad": 5,
+        "id": 31
+    },
+    {
+        "pedido_id": "3",
+        "producto_id": 2,
+        "nombre": "Reloj Inteligente",
+        "precio": 65000,
+        "cantidad": 2,
+        "id": 32
+    },
+    {
+        "pedido_id": "3",
+        "producto_id": 7,
+        "nombre": "Tablet 10\"",
+        "precio": 120000,
+        "cantidad": 1,
+        "id": 33
+    },
+    {
+        "pedido_id": "3",
+        "producto_id": 10,
+        "nombre": "Parlante Port\u00e1til",
+        "precio": 32000,
+        "cantidad": 2,
+        "id": 34
+    },
+    {
+        "pedido_id": "3",
+        "producto_id": 3,
+        "nombre": "Zapatillas Urbanas",
+        "precio": 52000,
+        "cantidad": 1,
+        "id": 35
+    },
+    {
+        "pedido_id": "3",
+        "producto_id": 4,
+        "nombre": "Bolso de Mano",
+        "precio": 38000,
+        "cantidad": 1,
+        "id": 36
+    },
+    {
+        "pedido_id": "4",
+        "producto_id": 1,
+        "nombre": "Test Product",
+        "precio": 100,
+        "cantidad": 1,
+        "id": 37
+    },
+    {
+        "pedido_id": "1",
+        "producto_id": 1,
+        "nombre": "Auriculares Pro",
+        "precio": 45000,
+        "cantidad": 1,
+        "id": 38
+    },
+    {
+        "pedido_id": "2",
+        "producto_id": 1,
+        "nombre": "Auriculares Pro",
+        "precio": 45000,
+        "cantidad": 5,
+        "id": 39
+    },
+    {
+        "pedido_id": "2",
+        "producto_id": 2,
+        "nombre": "Reloj Inteligente",
+        "precio": 65000,
+        "cantidad": 2,
+        "id": 40
+    },
+    {
+        "pedido_id": "2",
+        "producto_id": 7,
+        "nombre": "Tablet 10\"",
+        "precio": 120000,
+        "cantidad": 1,
+        "id": 41
+    },
+    {
+        "pedido_id": "2",
+        "producto_id": 10,
+        "nombre": "Parlante Port\u00e1til",
+        "precio": 32000,
+        "cantidad": 2,
+        "id": 42
+    },
+    {
+        "pedido_id": "2",
+        "producto_id": 3,
+        "nombre": "Zapatillas Urbanas",
+        "precio": 52000,
+        "cantidad": 1,
+        "id": 43
+    },
+    {
+        "pedido_id": "2",
+        "producto_id": 4,
+        "nombre": "Bolso de Mano",
+        "precio": 38000,
+        "cantidad": 1,
+        "id": 44
+    },
+    {
+        "pedido_id": "3",
+        "producto_id": 1,
+        "nombre": "Auriculares Pro",
+        "precio": 45000,
+        "cantidad": 5,
+        "id": 45
+    },
+    {
+        "pedido_id": "3",
+        "producto_id": 2,
+        "nombre": "Reloj Inteligente",
+        "precio": 65000,
+        "cantidad": 2,
+        "id": 46
+    },
+    {
+        "pedido_id": "3",
+        "producto_id": 7,
+        "nombre": "Tablet 10\"",
+        "precio": 120000,
+        "cantidad": 1,
+        "id": 47
+    },
+    {
+        "pedido_id": "3",
+        "producto_id": 10,
+        "nombre": "Parlante Port\u00e1til",
+        "precio": 32000,
+        "cantidad": 2,
+        "id": 48
+    },
+    {
+        "pedido_id": "3",
+        "producto_id": 3,
+        "nombre": "Zapatillas Urbanas",
+        "precio": 52000,
+        "cantidad": 1,
+        "id": 49
+    },
+    {
+        "pedido_id": "3",
+        "producto_id": 4,
+        "nombre": "Bolso de Mano",
+        "precio": 38000,
+        "cantidad": 1,
+        "id": 50
     }
 ]

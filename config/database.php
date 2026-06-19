@@ -278,17 +278,8 @@ class SimpleDB {
             }
         }
 
-        $rows = &$this->tables[$table];
-        $paramIdx = 0;
-
         // Assign param positions: first params are SET values, then WHERE values
         $setCount = count($sets);
-        $whereParams = [];
-        if ($whereClause) {
-            $conditions = $this->parseWhere($whereClause);
-            $rows = $this->filter($rows, $conditions, $params);
-            // Track used params
-        }
 
         // Re-map params: for each row, apply SET
         $allRows = &$this->tables[$table];
