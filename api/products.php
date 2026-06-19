@@ -1,23 +1,55 @@
 <?php
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+/**
+ * Products API - Product listing
+ *
+ * Routes (via api/index.php):
+ *   GET /api/products
+ *
+ * Legacy: products.php (no action needed)
+ */
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { exit; }
+require_once __DIR__ . '/../lib/bootstrap.php';
 
-require_once __DIR__ . '/../config/database.php';
-
-if ($pdo) {
-    try {
-        $stmt = $pdo->query("SELECT id, nombre, categoria, precio, riv_file, color, stock, solo_retiro, variantes FROM productos ORDER BY id");
-        $productos = $stmt->fetchAll();
-        echo json_encode(['success' => true, 'productos' => $productos, 'source' => 'db']);
-        exit;
-    } catch (Exception $e) {}
+// Handle legacy direct call
+$action = $_GET['action'] ?? '';
+if ($_SERVER['REQUEST_METHOD'] !== 'OPTIONS' && !$action) {
+  // If called directly (not through router), route to handle
 }
 
-$fallback = [
+/**
+ * GET /api/products
+ */
+function handleGetProducts() {
+  global $pdo;
+
+  try {
+    $stmt = $pdo->prepare("SELECT * FROM productos ORDER BY id ASC");
+    $stmt->execute();
+    $productos = $stmt->fetchAll();
+
+    if (!empty($productos)) {
+      Response::success([
+        'productos' => $productos,
+        'source' => 'db'
+      ]);
+    } else {
+      // Fallback to default products if DB is empty
+      Response::success([
+        'productos' => getDefaultProducts(),
+        'source' => 'default'
+      ]);
+    }
+  } catch (Exception $e) {
+    Logger::warning('DB products failed, using fallback: ' . $e->getMessage());
+    Response::success([
+      'productos' => getDefaultProducts(),
+      'source' => 'fallback'
+    ]);
+  }
+}
+
+function getDefaultProducts(): array {
+  return [
     ['id' => 1, 'nombre' => 'Auriculares Pro', 'categoria' => 'electronica', 'precio' => 45000, 'riv_file' => 'hero-ui-animation', 'color' => '#6c5ce7', 'stock' => 25, 'solo_retiro' => 0, 'variantes' => '[]'],
     ['id' => 2, 'nombre' => 'Reloj Inteligente', 'categoria' => 'electronica', 'precio' => 65000, 'riv_file' => 'rotating-can', 'color' => '#fd79a8', 'stock' => 15, 'solo_retiro' => 0, 'variantes' => '[]'],
     ['id' => 3, 'nombre' => 'Zapatillas Urbanas', 'categoria' => 'moda', 'precio' => 52000, 'riv_file' => 'shoe-showcase', 'color' => '#00b894', 'stock' => 30, 'solo_retiro' => 0, 'variantes' => '[]'],
@@ -27,6 +59,6 @@ $fallback = [
     ['id' => 7, 'nombre' => 'Tablet 10"', 'categoria' => 'electronica', 'precio' => 120000, 'riv_file' => 'rotating-can', 'color' => '#a29bfe', 'stock' => 8, 'solo_retiro' => 0, 'variantes' => '[]'],
     ['id' => 8, 'nombre' => 'Set de Pesas', 'categoria' => 'deportes', 'precio' => 35000, 'riv_file' => 'off_road_car_0_6', 'color' => '#fab1a0', 'stock' => 18, 'solo_retiro' => 0, 'variantes' => '[]'],
     ['id' => 9, 'nombre' => 'Billetera Elegante', 'categoria' => 'moda', 'precio' => 22000, 'riv_file' => 'purse-360', 'color' => '#6c5ce7', 'stock' => 35, 'solo_retiro' => 0, 'variantes' => '[]'],
-    ['id' => 10, 'nombre' => 'Parlante Portátil', 'categoria' => 'electronica', 'precio' => 32000, 'riv_file' => 'hero-ui-animation', 'color' => '#fd79a8', 'stock' => 22, 'solo_retiro' => 0, 'variantes' => '[]'],
-];
-echo json_encode(['success' => true, 'productos' => $fallback, 'source' => 'fallback']);
+    ['id' => 10, 'nombre' => 'Parlante Portátil', 'categoria' => 'electronica', 'precio' => 32000, 'riv_file' => 'hero-ui-animation', 'color' => '#fd79a8', 'stock' => 22, 'solo_retiro' => 0, 'variantes' => '[]']
+  ];
+}

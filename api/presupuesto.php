@@ -1,88 +1,102 @@
 <?php
 /**
- * API: Presupuesto / Cotización
- * Genera un presupuesto por email para productos personalizados.
+ * Presupuesto API - Quote/budget generation
+ *
+ * Routes (via api/index.php):
+ *   POST /api/presupuesto
+ *
+ * Legacy: presupuesto.php (no action needed)
  */
-session_start();
-header('Content-Type: application/json');
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../config/email.php';
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Método no permitido']);
-    exit;
-}
+require_once __DIR__ . '/../lib/bootstrap.php';
 
-$data = json_decode(file_get_contents('php://input'), true);
-if (!$data) {
-    echo json_encode(['success' => false, 'message' => 'Datos inválidos']);
-    exit;
-}
+// Handle legacy direct call
+$action = $_GET['action'] ?? '';
 
-$nombre = trim($data['nombre'] ?? '');
-$email = trim($data['email'] ?? '');
-$telefono = trim($data['telefono'] ?? '');
-$mensaje = trim($data['mensaje'] ?? '');
-$items = $data['items'] ?? []; // [{nombre, cantidad, categoria}]
+/**
+ * POST /api/presupuesto
+ */
+function handlePresupuesto() {
+  $data = getJsonBody();
 
-if (!$nombre || !$email || empty($items)) {
-    echo json_encode(['success' => false, 'message' => 'Completá todos los campos requeridos']);
-    exit;
-}
+  $v = new Validator($data, [
+    'nombre' => 'Nombre',
+    'email' => 'Email',
+    'items' => 'Productos'
+  ]);
+  $v->required('nombre', 'email', 'items')->email('email');
 
-// Generar número de presupuesto
-$dataFile = __DIR__ . '/../data/presupuestos.json';
-$presupuestos = file_exists($dataFile) ? (json_decode(file_get_contents($dataFile), true) ?: []) : [];
-$nextId = count($presupuestos) + 1;
-$presupuestoId = str_pad($nextId, 4, '0', STR_PAD_LEFT);
+  if (!$v->passes()) {
+    Response::error($v->firstError(), 422);
+  }
 
-// Guardar presupuesto
-$presupuesto = [
+  $nombre = trim($data['nombre']);
+  $email = trim($data['email']);
+  $telefono = trim($data['telefono'] ?? '');
+  $items = $data['items'];
+
+  if (empty($items)) {
+    Response::error('Agregá al menos un producto al presupuesto', 422);
+  }
+
+  // Generate sequential ID
+  $dataFile = __DIR__ . '/../data/presupuestos.json';
+  $presupuestos = file_exists($dataFile) ? (json_decode(file_get_contents($dataFile), true) ?: []) : [];
+  $presupuestoId = count($presupuestos) + 1;
+
+  // Assign estimated prices by category
+  $categoryPrices = [
+    'electronica' => 45000,
+    'moda' => 38000,
+    'hogar' => 18000,
+    'deportes' => 35000
+  ];
+
+  $itemsData = [];
+  foreach ($items as $item) {
+    $cat = $item['categoria'] ?? '';
+    $price = $categoryPrices[$cat] ?? 25000;
+    $itemsData[] = [
+      'nombre' => $item['nombre'] ?? 'Producto',
+      'precio' => $price,
+      'cantidad' => intval($item['cantidad'] ?? 1),
+      'categoria' => $cat
+    ];
+  }
+
+  $total = array_reduce($itemsData, fn($sum, $i) => $sum + $i['precio'] * $i['cantidad'], 0);
+
+  // Send email
+  require_once __DIR__ . '/../config/email.php';
+  $cliente = ['nombre' => $nombre, 'email' => $email, 'telefono' => $telefono];
+  $pedido = ['id' => $presupuestoId, 'total' => $total];
+
+  enviarEmailTipo('presupuesto', $email, $pedido, $itemsData, [
+    'presupuesto_id' => $presupuestoId,
+    'cliente' => $cliente
+  ]);
+
+  // Also send copy to admin
+  enviarEmailTipo('presupuesto', 'proveedores@shoprive.com', $pedido, $itemsData, [
+    'presupuesto_id' => $presupuestoId,
+    'cliente' => $cliente
+  ]);
+
+  // Save to file
+  $presupuestos[] = [
     'id' => $presupuestoId,
     'nombre' => $nombre,
     'email' => $email,
-    'telefono' => $telefono,
-    'mensaje' => $mensaje,
-    'items' => $items,
-    'created_at' => date('Y-m-d H:i:s'),
-    'estado' => 'pendiente'
-];
-$presupuestos[] = $presupuesto;
-file_put_contents($dataFile, json_encode($presupuestos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    'total' => $total,
+    'items' => $itemsData,
+    'fecha' => date('Y-m-d H:i:s')
+  ];
+  file_put_contents($dataFile, json_encode($presupuestos, JSON_PRETTY_PRINT));
 
-// Asignar precios estimados para el presupuesto (desde productos existentes o genéricos)
-$itemsConPrecio = [];
-foreach ($items as $item) {
-    $precio = 0;
-    $cat = strtolower($item['categoria'] ?? '');
-    if (strpos($cat, 'electronica') !== false) $precio = 45000;
-    elseif (strpos($cat, 'moda') !== false) $precio = 38000;
-    elseif (strpos($cat, 'hogar') !== false) $precio = 18000;
-    elseif (strpos($cat, 'deportes') !== false) $precio = 35000;
-    else $precio = 25000;
-    $itemsConPrecio[] = [
-        'nombre' => $item['nombre'],
-        'cantidad' => intval($item['cantidad'] ?? 1),
-        'precio' => $precio,
-        'categoria' => $item['categoria'] ?? ''
-    ];
+  Logger::info("Presupuesto #$presupuestoId generado para $email", ['total' => $total]);
+
+  Response::success([
+    'presupuesto_id' => $presupuestoId,
+    'total' => $total
+  ], 'Presupuesto generado. Te enviamos los detalles por email.');
 }
-
-// Enviar email con presupuesto
-$cliente = ['nombre' => $nombre, 'email' => $email];
-enviarEmailTipo('presupuesto', $email, $pedido ?? [], $itemsConPrecio, [
-    'presupuesto_id' => $presupuestoId,
-    'cliente' => $cliente
-]);
-
-// También enviar al admin
-enviarEmailTipo('presupuesto', 'proveedores@shoprive.com', $pedido ?? [], $itemsConPrecio, [
-    'presupuesto_id' => $presupuestoId,
-    'cliente' => $cliente
-]);
-
-echo json_encode([
-    'success' => true,
-    'presupuesto_id' => $presupuestoId,
-    'message' => 'Presupuesto generado. Te enviaremos un email con los detalles.'
-]);

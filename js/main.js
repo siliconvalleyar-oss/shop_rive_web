@@ -24,6 +24,7 @@ let riveInstances = [];
 let userId = null;
 let userRol = null;
 let selectedVariants = {};
+let pendingPedidoId = null;
 
 // --- UTILS ---
 function formatPrice(n) {
@@ -390,8 +391,20 @@ function toggleEnvio() {
 }
 
 // --- PAYMENT / CHECKOUT ---
+function resetSubmitBtn() {
+  const btn = document.getElementById('pay-submit-btn');
+  if (btn) btn.disabled = false;
+  const btnText = document.getElementById('pay-submit-text');
+  if (btnText) btnText.textContent = 'Confirmar Pedido';
+  const btnRive = document.getElementById('pay-submit-rive');
+  if (btnRive) btnRive.style.display = 'none';
+}
+
 function checkout() {
   if (cart.length === 0) { showToast('El carrito está vacío'); return; }
+
+  pendingPedidoId = null;
+  resetSubmitBtn();
 
   document.getElementById('payment-overlay').classList.add('open');
   document.getElementById('payment-modal').classList.add('open');
@@ -472,11 +485,14 @@ function closePayment() {
     document.getElementById('payment-qr-step').style.display = 'none';
     document.getElementById('payment-success').style.display = 'none';
     document.getElementById('payment-progress-wrap').style.display = 'none';
-    document.getElementById('payment-card-form').style.display = 'block';
+    const cardForm = document.getElementById('card-form');
+    if (cardForm) cardForm.style.display = 'block';
   }, 300);
 }
 
 function showPaymentForm() {
+  pendingPedidoId = null;
+  resetSubmitBtn();
   document.getElementById('payment-card-step').style.display = 'none';
   document.getElementById('payment-qr-step').style.display = 'none';
   document.getElementById('payment-form-wrap').style.display = 'block';
@@ -545,6 +561,17 @@ function showPaymentProgress(onComplete) {
 
 async function submitPayment(e) {
   e.preventDefault();
+
+  if (pendingPedidoId) {
+    const metodo = document.getElementById('pay-metodo').value;
+    if (metodo === 'qr') {
+      showQRStep(pendingPedidoId);
+    } else {
+      showCardStep(pendingPedidoId);
+    }
+    return;
+  }
+
   const btn = document.getElementById('pay-submit-btn');
   const btnText = document.getElementById('pay-submit-text');
   const btnRive = document.getElementById('pay-submit-rive');
@@ -584,6 +611,8 @@ async function submitPayment(e) {
     });
     const data = await res.json();
     if (data.success) {
+      pendingPedidoId = data.pedido_id;
+      resetSubmitBtn();
       const metodo = document.getElementById('pay-metodo').value;
       if (metodo === 'qr') {
         showQRStep(data.pedido_id);
@@ -592,15 +621,11 @@ async function submitPayment(e) {
       }
     } else {
       showToast(data.message || 'Error al crear el pedido');
-      btn.disabled = false;
-      btnText.textContent = 'Confirmar Pedido';
-      btnRive.style.display = 'none';
+      resetSubmitBtn();
     }
   } catch (e) {
     showToast('Error de conexión. Intentá de nuevo.');
-    btn.disabled = false;
-    btnText.textContent = 'Confirmar Pedido';
-    btnRive.style.display = 'none';
+    resetSubmitBtn();
   }
 }
 
@@ -610,7 +635,8 @@ async function processCardPayment(e) {
   const btnText = document.getElementById('card-pay-text');
   btn.disabled = true;
   btnText.textContent = 'Procesando...';
-  document.getElementById('payment-card-form').style.display = 'none';
+  const cardForm = document.getElementById('card-form');
+  if (cardForm) cardForm.style.display = 'none';
   const progress = showPaymentProgress();
 
   const pedidoId = document.getElementById('card-pedido-id').textContent;
@@ -630,6 +656,7 @@ async function processCardPayment(e) {
     });
     const data = await res.json();
     if (data.success) {
+      pendingPedidoId = null;
       // Pago exitoso → completar progreso + animación
       progress.complete(() => {
         document.getElementById('payment-progress-wrap').style.display = 'none';
@@ -660,11 +687,13 @@ async function processCardPayment(e) {
       showToast(data.message || 'Error al procesar el pago');
       btn.disabled = false;
       btnText.textContent = 'Pagar';
+      if (cardForm) cardForm.style.display = 'block';
     }
   } catch (e) {
     showToast('Error de conexión. Intentá de nuevo.');
     btn.disabled = false;
     btnText.textContent = 'Pagar';
+    if (cardForm) cardForm.style.display = 'block';
   }
 }
 

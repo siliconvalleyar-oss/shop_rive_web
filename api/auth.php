@@ -1,100 +1,158 @@
 <?php
-session_start();
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+/**
+ * Auth API - Login, Register, Session, Logout
+ *
+ * Routes (via api/index.php):
+ *   POST /api/auth/register
+ *   POST /api/auth/login
+ *   GET  /api/auth/session
+ *   POST /api/auth/logout
+ *
+ * Legacy: auth.php?action=register|login|session|logout
+ */
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { exit; }
+require_once __DIR__ . '/../lib/bootstrap.php';
 
-require_once __DIR__ . '/../config/database.php';
-
+// Handle legacy ?action= format
 $action = $_GET['action'] ?? '';
-
-if (!$pdo) {
-    echo json_encode(['success' => false, 'error' => 'Error de conexión a la base de datos. ¿Ejecutaste php scripts/setup_db.php?']);
-    exit;
+if ($action && $_SERVER['REQUEST_METHOD'] !== 'OPTIONS') {
+  switch ($action) {
+    case 'register': handleRegister(); break;
+    case 'login': handleLogin(); break;
+    case 'session': handleSession(); break;
+    case 'logout': handleLogout(); break;
+    default: Response::error('Acción no válida');
+  }
 }
 
-switch ($action) {
-    case 'register':
-        $data = json_decode(file_get_contents('php://input'), true);
-        $nombre = trim($data['nombre'] ?? '');
-        $email = trim($data['email'] ?? '');
-        $password = $data['password'] ?? '';
+/**
+ * POST /api/auth/register
+ */
+function handleRegister() {
+  $data = getJsonBody();
 
-        if (!$nombre || !$email || !$password) {
-            echo json_encode(['success' => false, 'error' => 'Completá todos los campos']);
-            exit;
-        }
+  $v = new Validator($data, [
+    'nombre' => 'Nombre',
+    'email' => 'Email',
+    'password' => 'Contraseña'
+  ]);
+  $v->required('nombre', 'email', 'password')
+    ->email('email')
+    ->minLength('nombre', 2)
+    ->maxLength('nombre', 100)
+    ->minLength('password', 4);
 
-        $stmt = $pdo->prepare("SELECT id FROM usuarios WHERE email = ?");
-        $stmt->execute([$email]);
-        if ($stmt->fetch()) {
-            echo json_encode(['success' => false, 'error' => 'El email ya está registrado']);
-            exit;
-        }
+  if (!$v->passes()) {
+    Response::error($v->firstError(), 422);
+  }
 
-        $hash = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare("INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, 'usuario')");
-        $stmt->execute([$nombre, $email, $hash]);
+  $nombre = trim($data['nombre']);
+  $email = trim($data['email']);
+  $password = $data['password'];
 
-        $_SESSION['user_id'] = $pdo->lastInsertId();
-        $_SESSION['user_nombre'] = $nombre;
-        $_SESSION['user_rol'] = 'usuario';
+  global $pdo;
+  $stmt = $pdo->prepare("SELECT id FROM usuarios WHERE email = ?");
+  $stmt->execute([$email]);
+  if ($stmt->fetch()) {
+    Response::error('El email ya está registrado', 409);
+  }
 
-        echo json_encode(['success' => true, 'user' => [
-            'id' => $_SESSION['user_id'],
-            'nombre' => $nombre,
-            'rol' => 'usuario'
-        ]]);
-        break;
+  $hash = password_hash($password, PASSWORD_DEFAULT);
+  $stmt = $pdo->prepare("INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, 'usuario')");
+  $stmt->execute([$nombre, $email, $hash]);
 
-    case 'login':
-        $data = json_decode(file_get_contents('php://input'), true);
-        $email = trim($data['email'] ?? '');
-        $password = $data['password'] ?? '';
+  $userId = $pdo->lastInsertId();
+  $_SESSION['user_id'] = $userId;
+  $_SESSION['user_nombre'] = $nombre;
+  $_SESSION['user_rol'] = 'usuario';
 
-        $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE email = ?");
-        $stmt->execute([$email]);
-        $user = $stmt->fetch();
+  Logger::info("Usuario registrado: $email (ID: $userId)");
+  CSRF::refresh();
 
-        if (!$user || !password_verify($password, $user['password'])) {
-            echo json_encode(['success' => false, 'error' => 'Email o contraseña incorrectos']);
-            exit;
-        }
+  Response::success([
+    'user' => [
+      'id' => $userId,
+      'nombre' => $nombre,
+      'rol' => 'usuario'
+    ]
+  ], 'Registro exitoso');
+}
 
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['user_nombre'] = $user['nombre'];
-        $_SESSION['user_rol'] = $user['rol'];
+/**
+ * POST /api/auth/login
+ */
+function handleLogin() {
+  $data = getJsonBody();
 
-        echo json_encode(['success' => true, 'user' => [
-            'id' => $user['id'],
-            'nombre' => $user['nombre'],
-            'rol' => $user['rol']
-        ]]);
-        break;
+  $v = new Validator($data, [
+    'email' => 'Email',
+    'password' => 'Contraseña'
+  ]);
+  $v->required('email', 'password')->email('email');
 
-    case 'session':
-        if (isset($_SESSION['user_id'])) {
-            $stmt = $pdo->prepare("SELECT id, nombre, email, rol, telefono, direccion, localidad FROM usuarios WHERE id = ?");
-            $stmt->execute([$_SESSION['user_id']]);
-            $user = $stmt->fetch();
-            if ($user) {
-                echo json_encode(['success' => true, 'user' => $user]);
-            } else {
-                echo json_encode(['success' => true, 'user' => ['id' => $_SESSION['user_id'], 'nombre' => $_SESSION['user_nombre'], 'rol' => $_SESSION['user_rol']]]);
-            }
-        } else {
-            echo json_encode(['success' => true, 'user' => null]);
-        }
-        break;
+  if (!$v->passes()) {
+    Response::error($v->firstError(), 422);
+  }
 
-    case 'logout':
-        session_destroy();
-        echo json_encode(['success' => true]);
-        break;
+  $email = trim($data['email']);
+  $password = $data['password'];
 
-    default:
-        echo json_encode(['success' => false, 'error' => 'Acción no válida']);
+  global $pdo;
+  $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE email = ?");
+  $stmt->execute([$email]);
+  $user = $stmt->fetch();
+
+  if (!$user || !password_verify($password, $user['password'])) {
+    Logger::warning("Intento de login fallido: $email");
+    Response::error('Email o contraseña incorrectos', 401);
+  }
+
+  $_SESSION['user_id'] = $user['id'];
+  $_SESSION['user_nombre'] = $user['nombre'];
+  $_SESSION['user_rol'] = $user['rol'];
+
+  Logger::info("Login exitoso: $email (ID: {$user['id']})");
+  CSRF::refresh();
+
+  Response::success([
+    'user' => [
+      'id' => $user['id'],
+      'nombre' => $user['nombre'],
+      'rol' => $user['rol']
+    ]
+  ], 'Inicio de sesión exitoso');
+}
+
+/**
+ * GET /api/auth/session
+ */
+function handleSession() {
+  if (isset($_SESSION['user_id'])) {
+    global $pdo;
+    $stmt = $pdo->prepare("SELECT id, nombre, email, rol, telefono, direccion, localidad FROM usuarios WHERE id = ?");
+    $stmt->execute([$_SESSION['user_id']]);
+    $user = $stmt->fetch();
+    if ($user) {
+      Response::success(['user' => $user]);
+    } else {
+      Response::success([
+        'user' => [
+          'id' => $_SESSION['user_id'],
+          'nombre' => $_SESSION['user_nombre'],
+          'rol' => $_SESSION['user_rol']
+        ]
+      ]);
+    }
+  } else {
+    Response::success(['user' => null]);
+  }
+}
+
+/**
+ * POST /api/auth/logout
+ */
+function handleLogout() {
+  session_destroy();
+  Logger::info('Sesión cerrada');
+  Response::success([], 'Sesión cerrada');
 }

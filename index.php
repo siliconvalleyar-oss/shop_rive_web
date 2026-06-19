@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="css/style.css">
   <?php require_once __DIR__ . '/config/apariencia.php'; renderThemeStyles(); ?>
   <script src="https://unpkg.com/@rive-app/webgl@2.9.1"></script>
+  <meta name="csrf-token" content="<?= htmlspecialchars($_SESSION['_csrf_token'] ?? '') ?>">
 </head>
 <body data-user="<?= $_SESSION['user_id'] ?? '' ?>" data-rol="<?= $_SESSION['user_rol'] ?? '' ?>">
 
@@ -25,18 +26,18 @@
         <a href="#contacto" class="nav-link" onclick="showSection('contacto')">Contacto</a>
       </nav>
       <div class="header-actions">
-        <?php if (isset($_SESSION['user_id'])): ?>
-          <span class="user-greeting" style="color:var(--text-muted);font-size:0.85rem;">
+        <span id="auth-placeholder" class="user-greeting" style="color:var(--text-muted);font-size:0.85rem;">
+          <?php if (isset($_SESSION['user_id'])): ?>
             <?= htmlspecialchars($_SESSION['user_nombre']) ?>
             <?php if ($_SESSION['user_rol'] === 'admin'): ?>
               <a href="admin/index.php" style="color:var(--primary);text-decoration:none;">[Admin]</a>
             <?php endif; ?>
             <a href="auth/logout.php" style="color:var(--accent);text-decoration:none;margin-left:8px;">Salir</a>
-          </span>
-        <?php else: ?>
-          <a href="auth/login.php" class="nav-link" style="font-size:0.85rem;">Ingresar</a>
-          <a href="auth/register.php" class="nav-link" style="font-size:0.85rem;">Registro</a>
-        <?php endif; ?>
+          <?php else: ?>
+            <a href="auth/login.php" class="nav-link" style="font-size:0.85rem;">Ingresar</a>
+            <a href="auth/register.php" class="nav-link" style="font-size:0.85rem;">Registro</a>
+          <?php endif; ?>
+        </span>
         <button class="icon-btn cart-btn" aria-label="Carrito" onclick="toggleCart()">
           <svg viewBox="0 0 24 24" class="icon-svg cart-icon" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
@@ -429,6 +430,6 @@
     </div>
   </div>
 
-  <script src="js/main.js"></script>
+  <script type="module" src="js/modules/main.js"></script>
 </body>
 </html>

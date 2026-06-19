@@ -15,6 +15,15 @@ server {
     charset utf-8;
 
     # ------------------------------------------------------------------
+    # Security headers
+    # ------------------------------------------------------------------
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "geolocation=(self), camera=(), microphone=()" always;
+
+    # ------------------------------------------------------------------
     # Security: Protect sensitive directories
     # ------------------------------------------------------------------
     location ~ ^/(data|config|scripts)/ {
@@ -25,6 +34,13 @@ server {
     location ~ /\. {
         deny all;
         return 404;
+    }
+
+    # ------------------------------------------------------------------
+    # API Routing — pass non-file API requests to front controller
+    # ------------------------------------------------------------------
+    location /api/ {
+        try_files $uri $uri/ /api/index.php?$query_string;
     }
 
     # ------------------------------------------------------------------

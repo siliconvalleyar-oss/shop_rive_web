@@ -1,89 +1,94 @@
 <?php
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+/**
+ * Chat API - Chatbot with pattern matching
+ *
+ * Routes (via api/index.php):
+ *   POST /api/chat
+ *
+ * Legacy: chat.php (no action needed)
+ */
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { exit; }
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(['success' => false, 'error' => 'Método no permitido']);
-    exit;
-}
+require_once __DIR__ . '/../lib/bootstrap.php';
 
-require_once __DIR__ . '/../config/database.php';
+// Handle legacy direct call
+$action = $_GET['action'] ?? '';
 
-$data = json_decode(file_get_contents('php://input'), true);
-$mensaje = trim(mb_strtolower($data['mensaje'] ?? ''));
+/**
+ * POST /api/chat
+ */
+function handleChat() {
+  $data = getJsonBody();
 
-if (!$mensaje) {
-    echo json_encode(['success' => false, 'error' => 'Mensaje vacío']);
-    exit;
-}
+  $v = new Validator($data, ['mensaje' => 'Mensaje']);
+  $v->required('mensaje')->maxLength('mensaje', 500);
+  if (!$v->passes()) Response::error($v->firstError(), 422);
 
-// Intentar cargar conocimiento desde BD, si no usar fallback
-$conocimiento = [];
+  $mensaje = trim($data['mensaje']);
 
-if ($pdo) {
-    try {
-        $stmt = $pdo->query("SELECT patron, respuesta FROM chatbot_conocimiento WHERE activo = 1 ORDER BY id");
-        $conocimiento = $stmt->fetchAll();
-    } catch (Exception $e) {}
-}
+  global $pdo;
 
-if (empty($conocimiento)) {
+  // Try to load knowledge base from DB
+  $conocimiento = [];
+  try {
+    $stmt = $pdo->prepare("SELECT * FROM chatbot_conocimiento ORDER BY id ASC");
+    $stmt->execute();
+    $conocimiento = $stmt->fetchAll();
+  } catch (Exception $e) {
+    Logger::debug('Chatbot DB not available, using fallback');
+  }
+
+  // Fallback knowledge base
+  if (empty($conocimiento)) {
     $conocimiento = [
-        ['patron' => 'hola|buenas|buenos días|buenas tardes|buenas noches|hey', 'respuesta' => '¡Hola! Soy el asistente de ShopRive. ¿En qué puedo ayudarte?'],
-        ['patron' => 'precio|cuánto cuesta|valor|costar', 'respuesta' => 'Los precios están visibles en cada producto. Si necesitas más detalles, pregúntame por un producto específico.'],
-        ['patron' => 'horario|atención|abierto|abren|cierran', 'respuesta' => 'Atenemos de lunes a viernes de 9 a 18 h. Los fines de semana respondemos consultas por este chat.'],
-        ['patron' => 'envío|envios|envían|entrega|envío gratis', 'respuesta' => 'Hacemos envíos a todo el país. El costo varía según tu ubicación. Los pedidos superiores a $50.000 tienen envío gratis.'],
-        ['patron' => 'pago|tarjeta|transferencia|efectivo|método de pago|medios de pago', 'respuesta' => 'Aceptamos tarjetas de crédito/débito, transferencia bancaria y Mercado Pago. También podés pagar en efectivo con depósito bancario.'],
-        ['patron' => 'garantía|garantia|cambio|devolver|reembolso', 'respuesta' => 'Todos nuestros productos tienen 30 días de garantía. Podés cambiar o devolver sin costo dentro de ese período.'],
-        ['patron' => 'gracias|muchas gracias|gracias totales', 'respuesta' => '¡Gracias a vos por elegir ShopRive! Si necesitas algo más, acá estoy. 😊'],
-        ['patron' => 'catálogo|productos|qué venden|tienda|comprar', 'respuesta' => 'Tenemos auriculares, relojes inteligentes, mochilas, zapatillas, lámparas, camperas, tablets y sets de pesas. Navegá por las categorías para verlos todos.'],
-        ['patron' => 'contacto|teléfono|tel|whatsapp|mail|email', 'respuesta' => 'Podes contactarnos al WhatsApp: +54 11 5555-1234 o al mail: soporte@shoprive.com'],
-        ['patron' => 'default', 'respuesta' => 'Disculpa, no entendí la consulta. Podés preguntarme por productos, precios, envíos, pagos o garantía.'],
+      ['patron' => 'hola|buenas|buen día|buen día|qué tal|que tal|hey|saludos', 'respuesta' => '¡Hola! Bienvenido a ShopRive 😊 ¿En qué puedo ayudarte hoy?'],
+      ['patron' => 'precio|cuánto|cuanto|valor|costo|sale', 'respuesta' => 'Los precios varían según el producto. Todos los precios están visibles en la tienda. ¡Tenemos opciones para todos los bolsillos! 💰'],
+      ['patron' => 'horario|atienden|abren|cierran|abierto', 'respuesta' => 'Atención al cliente: Lun a Vie de 9 a 18hs. Tienda online disponible 24/7. 🕘'],
+      ['patron' => 'envió|envío|envían|envían|domicilio|entrega|llega|demora', 'respuesta' => 'Hacemos envíos a domicilio. El tiempo de entrega depende de tu ubicación (generalmente 3-7 días hábiles). También ofrecemos retiro en local. 🚚'],
+      ['patron' => 'pago|pagar|tarjeta|transferencia|efectivo|mercado pago|cuota|cuotas', 'respuesta' => 'Aceptamos tarjeta de crédito/débito, transferencia bancaria, Mercado Pago, QR con Cuenta DNI, y efectivo. En la pantalla de pago podés elegir la opción que prefieras. 💳'],
+      ['patron' => 'garantía|garantia|cambio|cambiar|devolver|falla|roto|problema', 'respuesta' => 'Todos los productos tienen garantía. Los electrónicos tienen 6 meses de garantía. Podés solicitar cambio de talle sin costo en productos de moda. 🛡️'],
+      ['patron' => 'gracias|gracias|muchas gracias|agradezco|genial|excelente', 'respuesta' => '¡Gracias a vos! Si tenés alguna otra consulta, no dudes en preguntar. Que tengas un excelente día 😊'],
+      ['patron' => 'catálogo|catálogo|productos|qué venden|qué venden|venden', 'respuesta' => 'Tenemos una gran variedad de productos: Electrónica (auriculares, relojes, tablets, parlantes), Moda (zapatillas, carteras, camperas, billeteras), Hogar (lámparas), Deportes (pesas). ¡Mirá nuestro catálogo en la tienda! 🛍️'],
+      ['patron' => 'contacto|teléfono|teléfono|whatsapp|email|mail|ubicación|ubicacion|dirección|direccion', 'respuesta' => 'Podés contactarnos al +54 11 5555-1234, por WhatsApp al mismo número, o por email a soporte@shoprive.com. Estamos en Av. Corrientes 1234, Buenos Aires. 📍'],
+      ['patron' => 'default', 'respuesta' => 'No estoy seguro de entender tu consulta. Podés llamarnos al +54 11 5555-1234 o escribirnos a soporte@shoprive.com para ayudarte mejor. 😊']
     ];
-}
+  }
 
-$respuesta = null;
-$intencion = 'default';
-
-foreach ($conocimiento as $item) {
-    $patrones = explode('|', $item['patron']);
+  // Match against patterns
+  $respuesta = '';
+  $intencion = 'default';
+  foreach ($conocimiento as $entry) {
+    $patrones = explode('|', $entry['patron']);
     foreach ($patrones as $patron) {
-        $patron = trim($patron);
-        if ($patron === 'default') continue;
-        if (preg_match('/\b' . preg_quote($patron, '/') . '\b/i', $mensaje)) {
-            $respuesta = $item['respuesta'];
-            $intencion = $patron;
-            break 2;
-        }
+      $patron = trim($patron);
+      if ($patron === 'default') continue;
+      if (preg_match('/\b' . preg_quote($patron, '/') . '\b/i', $mensaje)) {
+        $respuesta = $entry['respuesta'];
+        $intencion = $patron;
+        break 2;
+      }
     }
-}
+  }
 
-// Fallback
-if (!$respuesta) {
-    foreach ($conocimiento as $item) {
-        if (trim($item['patron']) === 'default') {
-            $respuesta = $item['respuesta'];
-            break;
-        }
+  if (!$respuesta) {
+    // Find default response
+    foreach ($conocimiento as $entry) {
+      if ($entry['patron'] === 'default') {
+        $respuesta = $entry['respuesta'];
+        break;
+      }
     }
-}
+  }
 
-// Guardar conversación (opcional)
-if ($pdo) {
-    try {
-        $stmt = $pdo->prepare("INSERT INTO chatbot_logs (mensaje, respuesta, intencion) VALUES (?, ?, ?)");
-        $stmt->execute([$mensaje, $respuesta, $intencion]);
-    } catch (Exception $e) {
-        // Tabla no existe o error - ignorar
-    }
-}
+  // Save chat log
+  try {
+    $stmt = $pdo->prepare("INSERT INTO chatbot_logs (mensaje, respuesta, intencion) VALUES (?, ?, ?)");
+    $stmt->execute([$mensaje, $respuesta, $intencion]);
+  } catch (Exception $e) {
+    Logger::debug('Failed to save chat log: ' . $e->getMessage());
+  }
 
-echo json_encode([
-    'success' => true,
-    'respuesta' => nl2br(htmlspecialchars($respuesta)),
+  Response::success([
+    'respuesta' => $respuesta,
     'intencion' => $intencion
-]);
+  ]);
+}
