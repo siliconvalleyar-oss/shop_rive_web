@@ -12,8 +12,8 @@
 - [x] **Separación JS en módulos**: 10 módulos ES6 en `js/modules/` con state management observable
 
 - [ ] **Migrar de SimpleDB (JSON) a MySQL/PostgreSQL**: Los archivos JSON no soportan concurrencia. Con 2+ usuarios escribiendo simultáneamente se corrompen. CRÍTICO.
-- [ ] **Reemplazar mail() por servicio transaccional**: `mail()` de PHP cae en spam o no llega. Usar SendGrid, Resend, o SMTP.
-- [ ] **Sesiones en Redis/Memcached**: Las sesiones en filesystem no escalan con múltiples servidores.
+- [x] **Mailer multi-driver**: SMTP, SendGrid, Resend, log, mail() con fallback automático. Config en `config/mail.php`
+- [x] **Sesiones distribuidas**: SessionManager con drivers Redis, Memcached, file. Auto-detecta extensión disponible. Config en `config/session.php`
 - [ ] **Panel admin completo**: CRUD de productos, usuarios y pedidos desde `admin/`
 - [ ] **Búsqueda de productos**: Input de búsqueda en el header con filtrado dinámico
 - [ ] **Paginación de productos**: Cargar más productos con scroll infinito o paginación
